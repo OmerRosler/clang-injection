@@ -28,6 +28,12 @@
     <Filter Include="Source Files\Sema">
       <UniqueIdentifier>{191b0fa6-5288-4829-a947-e57e57f4d045}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Lexer">
+      <UniqueIdentifier>{ad10270b-4d6c-4c95-895e-ab445b1eab8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Lexer">
+      <UniqueIdentifier>{9f6a2176-a462-4c5e-869f-1d94dafd47f4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gpt_code.cpp">
@@ -40,6 +46,12 @@
       <Filter>Source Files\Parser</Filter>
     </ClCompile>
     <ClCompile Include="ParseType.cpp">
+      <Filter>Source Files\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="Lexer.cpp">
+      <Filter>Source Files\Lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="Parser.cpp">
       <Filter>Source Files\Parser</Filter>
     </ClCompile>
   </ItemGroup>
@@ -58,6 +70,21 @@
     </ClInclude>
     <ClInclude Include="Sema.hpp">
       <Filter>Header Files\Sema</Filter>
+    </ClInclude>
+    <ClInclude Include="ASTContext.hpp">
+      <Filter>Header Files\Sema</Filter>
+    </ClInclude>
+    <ClInclude Include="Lexer.hpp">
+      <Filter>Header Files\Lexer</Filter>
+    </ClInclude>
+    <ClInclude Include="Preprocessor.hpp">
+      <Filter>Header Files\Lexer</Filter>
+    </ClInclude>
+    <ClInclude Include="IdentifierTable.hpp">
+      <Filter>Header Files\Lexer</Filter>
+    </ClInclude>
+    <ClInclude Include="Token.hpp">
+      <Filter>Header Files\Lexer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

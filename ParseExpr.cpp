@@ -1,42 +1,74 @@
 #include "Parser.hpp"
 #include "Sema.hpp"
 
-Expr* Parser::parsePrimary() {
-    if (index >= tokens.size()) throw std::runtime_error("Unexpected EOF");
-    const std::string& tok = tokens[index++];
+Expr* Parser::ParseLiteral() {
+    std::string text = Tok.Text;
+    TokenKind kind = Tok.Kind;
+    ConsumeToken();
 
-    if (tok == "int") {
-        return sema.ActOnIntLiteral(42);
+    if (kind == TokenKind::IntKeyword) {
+        int value = std::stoi(text); // simulate clang's token-to-int conversion
+        return Actions.ActOnIntLiteral(value);
     }
-    else if (tok == "double") {
-        return sema.ActOnDoubleLiteral(3.14);
+    else if (kind == TokenKind::DoubleKeyword) {
+        double value = std::stod(text);
+        return Actions.ActOnDoubleLiteral(value);
     }
     else {
-        return sema.actOnUnknownName(tok);
+        throw std::runtime_error("Unsupported literal");
     }
 }
 
-Expr* Parser::parseExpr(int minPrec) {
-    Expr* lhs = parsePrimary();
-
-    while (index < tokens.size()) {
-        const std::string& op = tokens[index];
-        int prec = precedence(op);
-        if (prec < minPrec) break;
-
-        ++index; // consume operator
-        Expr* rhs = parseExpr(prec + 1);
-
-        if (op == "+") {
-            lhs = sema.actOnPlusExpr(lhs, rhs);
-        }
-        else if (op == "*") {
-            lhs = sema.actOnMultiplyExpr(lhs, rhs);
-        }
-        else {
-            throw std::runtime_error("Unknown binary operator: " + op);
-        }
+Expr* Parser::parsePrimary() {
+    if (Tok.Kind == TokenKind::IntLiteral) {
+        int val = std::stoi(Tok.Text);
+        ConsumeToken();
+        return Actions.ActOnIntLiteral(val);
     }
+    else if (Tok.Kind == TokenKind::DoubleLiteral) {
+        double val = std::stod(Tok.Text);
+        ConsumeToken();
+        return Actions.ActOnDoubleLiteral(val);
+    }
+    else if (Tok.Kind == TokenKind::Identifier) {
+        std::string name = Tok.Text;
+        ConsumeToken();
+        return Actions.ActOnUnknownName(name);
+    }
+    else {
+        throw std::runtime_error("Unexpected token in primary expression");
+    }
+}
 
-    return lhs;
+Expr* Parser::parseBinOpRHS(int exprPrec, Expr* lhs) {
+    while (true) {
+        int tokPrec = getPrecedence();
+        if (tokPrec < exprPrec)
+            return lhs;
+
+        Token op = Tok;
+        ConsumeToken();
+
+        Expr* rhs = parsePrimary();
+        if (!rhs) return nullptr;
+
+        int nextPrec = getPrecedence();
+        if (tokPrec < nextPrec) {
+            rhs = parseBinOpRHS(tokPrec + 1, rhs);
+            if (!rhs) return nullptr;
+        }
+
+        if (op.is(TokenKind::Plus))
+            lhs = Actions.ActOnPlusExpr(lhs, rhs);
+        else if (op.is(TokenKind::Star))
+            lhs = Actions.ActOnMultiplyExpr(lhs, rhs);
+        else
+            throw std::runtime_error("Unknown binary operator");
+    }
+}
+
+Expr* Parser::parseExpr() {
+    Expr* lhs = parsePrimary();
+    if (!lhs) return nullptr;
+    return parseBinOpRHS(0, lhs);
 }

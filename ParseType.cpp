@@ -1,17 +1,15 @@
 #include "Parser.hpp"
 #include "Sema.hpp"
-
 Type* Parser::parseType() {
-    if (index >= tokens.size()) throw std::runtime_error("Unexpected EOF");
-    const std::string& tok = tokens[index++];
-
-    if (tok == "int") {
-        return sema.actOnBuiltinType(BuiltinType::BuiltinKind::Int);
+    if (Tok.Kind == TokenKind::IntKeyword || Tok.Kind == TokenKind::DoubleKeyword) {
+        std::string name = Tok.Text;
+        ConsumeToken();
+        return Actions.ActOnBuiltinType(name);
     }
-    else if (tok == "double") {
-        return sema.actOnBuiltinType(BuiltinType::BuiltinKind::Double);
-    }
-    else {
-        return sema.actOnUnresolvedType(tok);
+    else if (Tok.Kind == TokenKind::Identifier)
+    {
+        std::string name = Tok.Text;
+        ConsumeToken();
+        return Actions.ActOnUnresolvedType(name);
     }
 }

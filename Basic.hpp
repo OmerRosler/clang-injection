@@ -1,4 +1,6 @@
 #pragma once
+#include <utility>
+#include <typeinfo>
 
 // Forward declarations
 struct Type;
@@ -10,6 +12,8 @@ struct IntLiteral;
 struct VarExpr;
 struct AddExpr;
 
+struct Lexer;
+struct Preprocessor;
 struct Parser;
 struct Sema;
 

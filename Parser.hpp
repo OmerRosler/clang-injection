@@ -1,49 +1,41 @@
 #pragma once
 #include "ASTType.hpp"
 #include "ASTExpr.hpp"
+#include "Token.hpp"
 
 
 // === Parser ===
 class Parser {
 private:
 
-    // Helper: peek at current token without consuming
-    std::string peekToken() const {
-        if (index >= tokens.size()) return "";
-        return tokens[index];
-    }
-
-    // Helper: consume and return current token
-    std::string consumeToken() {
-        if (index >= tokens.size()) throw std::runtime_error("Unexpected EOF");
-        return tokens[index++];
-    }
-
-    // Check if token is binary operator (extend as needed)
-    bool isBinaryOperator(const std::string& tok) const {
-        return tok == "+";
-    }
+    void ConsumeToken();
 
 public:
-    Parser(std::vector<std::string> toks, Sema& s)
-        : tokens(std::move(toks)), sema(s) {}
+    Parser(Preprocessor& pp, Sema& s)
+        : PP(pp), Actions(s) {
+        ConsumeToken();
+    }
 
 
-    int precedence(const std::string& op) const {
-        if (op == "*") return 20;
-        if (op == "+") return 10;
+    int getPrecedence() const {
+        if (Tok.is(TokenKind::Plus)) return 10;
+        if (Tok.is(TokenKind::Star)) return 20;
         return -1;
     }
 
-    Expr* parsePrimary();
 
-    Expr* parseExpr(int minPrec = 0);
+    Expr* parsePrimary();
+    Expr* ParseLiteral();
+
+    Expr* parseExpr();
+
+    Expr* parseBinOpRHS(int exprPrec, Expr* lhs);
 
     Type* parseType();
 
 protected:
-    Sema& sema;
+    Preprocessor& PP;
+    Sema& Actions;
+    Token Tok;
 
-    std::vector<std::string> tokens;
-    size_t index = 0;
 };

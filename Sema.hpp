@@ -1,6 +1,9 @@
 #pragma once
 #include "ASTType.hpp"
 #include "ASTExpr.hpp"
+
+#include "ASTContext.hpp"
+#include "Preprocessor.hpp"
 // === Phase 2 Resolver ===
 struct Phase2Resolver {
 public:
@@ -44,56 +47,55 @@ public:
 };
 
 
-// === Simulated ASTContext Allocator ===
-class ASTContext {
-    std::list<void*> allocations;
-
-public:
-    template<typename T, typename... Args>
-    T* create(Args&&... args) {
-        void* mem = std::malloc(sizeof(T));
-        T* obj = new (mem) T(std::forward<Args>(args)...);
-        allocations.push_back(mem);
-        return obj;
-    }
-
-    ~ASTContext() {
-        for (void* ptr : allocations) std::free(ptr); // No destructor calls (matches clang style)
-    }
-};
-
 class Sema {
-    ASTContext& ctx;
+    // === Core State ===
+    ASTContext& Context;               // Owns the AST nodes
+    //DiagnosticsEngine& Diags;         // For errors/warnings
+    // SourceManager& SourceMgr;         // For tracking locations
+    //Preprocessor& PP;                 // Token info
+    //IdentifierTable& Identifiers;     // All known identifiers
+    //DeclarationNameTable& DeclarationNames; // All known decl names
+    //Builtin::Context BuiltinInfo;     // Info about builtin functions/types
+
+    // === Scope and Lookup ===
+    //Scope* CurScope = nullptr;
+    //std::vector<DeclContext*> ContextStack;
+
+    // === Symbol Tables ===
+    //DeclContext* CurContext;         // E.g. current function, class, etc.
 
 public:
-    explicit Sema(ASTContext& c) : ctx(c) {}
+    explicit Sema(ASTContext& c) : Context(c) {}
 
-    PlusExpr* actOnPlusExpr(Expr* lhs, Expr* rhs) {
+    PlusExpr* ActOnPlusExpr(Expr* lhs, Expr* rhs) {
         // Perform semantic checks (omitted here)
-        return ctx.create<PlusExpr>(lhs, rhs);
+        return Context.create<PlusExpr>(lhs, rhs);
     }
 
-    MultiplyExpr* actOnMultiplyExpr(Expr* lhs, Expr* rhs) {
-        return ctx.create<MultiplyExpr>(lhs, rhs);
+    MultiplyExpr* ActOnMultiplyExpr(Expr* lhs, Expr* rhs) {
+        return Context.create<MultiplyExpr>(lhs, rhs);
     }
 
     IntLiteralExpr* ActOnIntLiteral(int value) {
-        return ctx.create<IntLiteralExpr>(value);
+        return Context.create<IntLiteralExpr>(value);
     }
 
     DoubleLiteralExpr* ActOnDoubleLiteral(double value) {
-        return ctx.create<DoubleLiteralExpr>(value);
+        return Context.create<DoubleLiteralExpr>(value);
     }
 
-    UnknownNameExpr* actOnUnknownName(const std::string& name) {
-        return ctx.create<UnknownNameExpr>(name);
+    UnknownNameExpr* ActOnUnknownName(const std::string& name) {
+        return Context.create<UnknownNameExpr>(name);
+    }
+    BuiltinType* ActOnBuiltinType(const std::string& name) {
+        if (name == "int") 
+            return Context.create<BuiltinType>(BuiltinType::BuiltinKind::Int);
+        if (name == "double") 
+            return Context.create<BuiltinType>(BuiltinType::BuiltinKind::Double);
+        throw std::runtime_error("Unknown type: " + name);
     }
 
-    BuiltinType* actOnBuiltinType(BuiltinType::BuiltinKind kind) {
-        return ctx.create<BuiltinType>(kind);
-    }
-
-    UnresolvedType* actOnUnresolvedType(const std::string n) {
-        return ctx.create<UnresolvedType>(n);
+    UnresolvedType* ActOnUnresolvedType(const std::string n) {
+        return Context.create<UnresolvedType>(n);
     }
 };

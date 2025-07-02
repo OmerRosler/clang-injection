@@ -124,15 +124,22 @@
   <ItemGroup>
     <ClCompile Include="ASTType.hpp" />
     <ClCompile Include="gpt_code.cpp" />
+    <ClCompile Include="Lexer.cpp" />
     <ClCompile Include="ParseExpr.cpp" />
+    <ClCompile Include="Parser.cpp" />
     <ClCompile Include="ParseType.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ASTContext.hpp" />
     <ClInclude Include="ASTExpr.hpp" />
     <ClInclude Include="ASTStmt.hpp" />
     <ClInclude Include="Basic.hpp" />
+    <ClInclude Include="IdentifierTable.hpp" />
+    <ClInclude Include="Lexer.hpp" />
     <ClInclude Include="Parser.hpp" />
+    <ClInclude Include="Preprocessor.hpp" />
     <ClInclude Include="Sema.hpp" />
+    <ClInclude Include="Token.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -59,11 +59,11 @@ struct UnresolvedType : Type {
 
     void print(std::ostream& os) const override {
         if (resolved) {
-            os << "<resolved> ";
+            os << "<resolved type> ";
             resolved->print(os);
         }
         else {
-            os << "<unresolved> " << name;
+            os << "<unresolved type> " << name;
         }
     }
 };
