@@ -10,7 +10,7 @@
 // === Base class for all types ===
 class Type {
 public:
-    enum class TypeClass { Builtin, Resolved, Unresolved };
+    enum class TypeClass { Builtin, Typedef, Resolved, Unresolved };
 
     TypeClass typeClass;
 
@@ -67,6 +67,13 @@ struct UnresolvedType : Type {
             os << "<unresolved type> " << name;
         }
     }
+};
+
+
+struct TypedefType : Type {
+    TypedefDecl* TD;
+    explicit TypedefType(TypedefDecl* td) : Type(TypeClass::Typedef), TD(td) {}
+    void print(std::ostream& os) const override;
 };
 
 

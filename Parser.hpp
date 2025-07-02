@@ -33,6 +33,10 @@ public:
 
     Type* parseType();
 
+    Type* ParseTypeSpecifier();
+
+    Decl* ParseDeclaration();
+
 protected:
     Preprocessor& PP;
     Sema& Actions;

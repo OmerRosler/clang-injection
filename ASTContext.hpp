@@ -23,4 +23,8 @@ public:
     }
 
     IdentifierTable& getIdentifierTable() { return Idents; }
+
+    Type* getTypeDeclType(TypedefDecl* TD) {
+        return create<TypedefType>(TD);
+    }
 };

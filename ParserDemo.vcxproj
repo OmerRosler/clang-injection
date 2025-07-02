@@ -125,9 +125,11 @@
     <ClCompile Include="ASTDecl.cpp" />
     <ClCompile Include="ASTDecl.hpp" />
     <ClCompile Include="ASTExpr.cpp" />
+    <ClCompile Include="ASTType.cpp" />
     <ClCompile Include="ASTType.hpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Lexer.cpp" />
+    <ClCompile Include="ParseDecl.cpp" />
     <ClCompile Include="ParseExpr.cpp" />
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="ParseType.cpp" />

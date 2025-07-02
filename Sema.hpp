@@ -21,22 +21,52 @@ class Sema {
     //std::vector<DeclContext*> ContextStack;
 
     // === Symbol Tables ===
-    DeclContext& CurrentDeclContext;         // E.g. current function, class, etc.
+    DeclContext* CurrentDeclContext;         // E.g. current function, class, etc.
 
 
     // Lookup name in current DeclContext
     NamedDecl* lookupName(const std::string& name) {
-        return CurrentDeclContext.lookup(name);
+        return CurrentDeclContext->lookup(name);
+    }
+
+    Type* getTypeName(const std::string& name) {
+        // First check if builtin
+        if (name == "int" || name == "double") return ActOnBuiltinType(name);
+
+        // Lookup in DeclContext
+        NamedDecl* decl = CurrentDeclContext->lookup(name);
+        if (isa<TypedefDecl>(decl)) {
+            TypedefDecl* TD = cast<TypedefDecl>(decl);
+            Type* Ty = Context.getTypeDeclType(TD);
+        }
+        else {
+            // Error or unresolved
+        }
+        if (decl) {
+            // For toy model, return resolved type with the name of decl
+            return Context.create<ResolvedType>(decl->getName());
+        }
+        else {
+            // Unknown type - create unresolved placeholder
+            return Context.create<UnresolvedType>(name);
+        }
     }
 public:
-    explicit Sema(ASTContext& c, DeclContext& CurDeclContext) : Context(c), CurrentDeclContext(CurDeclContext) {}
+    explicit Sema(ASTContext& c, DeclContext* CurDeclContext) : Context(c), CurrentDeclContext(CurDeclContext) {}
 
+    IdentifierInfo* getIdentifierInfo(const std::string& name) {
+        return Context.getIdentifierTable().get(name);
+    }
+
+    Type* getTypeForIdentifier(IdentifierInfo* id) {
+        return getTypeName(id->getName()); // You already have getTypeName
+    }
     Type* ActOnTypeName(const std::string& name) {
         // First check if builtin
         if (name == "int" || name == "double") return ActOnBuiltinType(name);
 
         // Lookup in DeclContext
-        NamedDecl* decl = CurrentDeclContext.lookup(name);
+        NamedDecl* decl = CurrentDeclContext->lookup(name);
         if (decl) {
             // For toy model, return resolved type with the name of decl
             return Context.create<ResolvedType>(decl->getName());
@@ -53,6 +83,19 @@ public:
             return Context.create<DeclRefExpr>(decl);
         else
             return Context.create<UnresolvedNameExpr>(name);
+    }
+
+
+    Decl* ActOnVarDecl(Type* type, IdentifierInfo* id, Expr* init = nullptr) {
+        VarDecl* VD = Context.create<VarDecl>(id, type, init);
+        CurrentDeclContext->addDecl(VD);
+        return VD;
+    }
+
+    Decl* ActOnTypedefDecl(Type* type, IdentifierInfo* id) {
+        TypedefDecl* TD = Context.create<TypedefDecl>(id, type);
+        CurrentDeclContext->addDecl(TD);
+        return TD;
     }
 
     PlusExpr* ActOnPlusExpr(Expr* lhs, Expr* rhs) {

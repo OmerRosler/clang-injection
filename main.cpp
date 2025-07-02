@@ -14,7 +14,7 @@ int main() {
     //NamedDecl myType("foo");
     //dc.addDecl(&myType);
 
-    Sema sema(ctx, dc);
+    Sema sema(ctx, &dc);
 
     auto lexer = std::make_unique<Lexer>(std::vector<Token>{
         {TokenKind::IntLiteral, "42"},
