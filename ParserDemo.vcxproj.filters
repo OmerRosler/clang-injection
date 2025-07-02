@@ -36,7 +36,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="gpt_code.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ASTType.hpp">
@@ -85,6 +85,9 @@
     </ClInclude>
     <ClInclude Include="Token.hpp">
       <Filter>Header Files\Lexer</Filter>
+    </ClInclude>
+    <ClInclude Include="DeclContext.hpp">
+      <Filter>Header Files\Sema</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

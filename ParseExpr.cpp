@@ -19,7 +19,7 @@ Expr* Parser::ParseLiteral() {
     }
 }
 
-Expr* Parser::parsePrimary() {
+Expr* Parser::parsePrimaryExpr() {
     if (Tok.Kind == TokenKind::IntLiteral) {
         int val = std::stoi(Tok.Text);
         ConsumeToken();
@@ -49,7 +49,7 @@ Expr* Parser::parseBinOpRHS(int exprPrec, Expr* lhs) {
         Token op = Tok;
         ConsumeToken();
 
-        Expr* rhs = parsePrimary();
+        Expr* rhs = parsePrimaryExpr();
         if (!rhs) return nullptr;
 
         int nextPrec = getPrecedence();
@@ -68,7 +68,7 @@ Expr* Parser::parseBinOpRHS(int exprPrec, Expr* lhs) {
 }
 
 Expr* Parser::parseExpr() {
-    Expr* lhs = parsePrimary();
+    Expr* lhs = parsePrimaryExpr();
     if (!lhs) return nullptr;
     return parseBinOpRHS(0, lhs);
 }

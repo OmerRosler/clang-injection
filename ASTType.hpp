@@ -11,7 +11,7 @@ struct ASTContext;
 
 // === Base class for all types ===
 struct Type {
-    enum class TypeClass { Builtin, Unresolved };
+    enum class TypeClass { Builtin, Resolved, Unresolved };
     TypeClass typeClass;
     explicit Type(TypeClass tc) : typeClass(tc) {}
     virtual ~Type() = default;
@@ -66,4 +66,11 @@ struct UnresolvedType : Type {
             os << "<unresolved type> " << name;
         }
     }
+};
+
+
+struct ResolvedType : Type {
+    std::string name;
+    explicit ResolvedType(std::string n) : Type(TypeClass::Resolved), name(std::move(n)) {}
+    void print(std::ostream& os) const override { os << name; }
 };

@@ -9,6 +9,13 @@
 
 int main() {
     ASTContext ctx;
+    DeclContext dc;
+
+    NamedDecl myType("foo");
+    dc.addDecl(&myType);
+
+    Sema sema(ctx, dc);
+
     auto lexer = std::make_unique<Lexer>(std::vector<Token>{
         {TokenKind::IntLiteral, "42"},
         { TokenKind::Plus, "+" },
@@ -18,7 +25,6 @@ int main() {
         { TokenKind::EndOfFile, "" }
     });
     Preprocessor pp(std::move(lexer), ctx.getIdentifierTable());
-    Sema sema(ctx);
     Parser parser(pp, sema);
 
     Expr* expr = parser.parseExpr();

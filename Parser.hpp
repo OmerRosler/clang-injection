@@ -24,7 +24,7 @@ public:
     }
 
 
-    Expr* parsePrimary();
+    Expr* parsePrimaryExpr();
     Expr* ParseLiteral();
 
     Expr* parseExpr();

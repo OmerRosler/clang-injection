@@ -4,33 +4,46 @@
 #include <vector>
 #include "Basic.hpp"
 #include "Token.hpp"
+// == = IdentifierInfo == =
+class IdentifierInfo {
+    std::string Name;
+    bool IsKeyword = false;
+
+public:
+    explicit IdentifierInfo(std::string name) : Name(std::move(name)) {}
+
+    const std::string& getName() const { return Name; }
+    bool isKeyword() const { return IsKeyword; }
+    void setKeyword(bool val) { IsKeyword = val; }
+};
 
 // === IdentifierTable ===
-// Simplified, just maps strings to TokenKinds (keywords vs identifiers)
 class IdentifierTable {
-    std::unordered_map<std::string, TokenKind> Table;
+    // Owns all IdentifierInfo instances
+    std::unordered_map<std::string, std::unique_ptr<IdentifierInfo>> Table;
 
 public:
     IdentifierTable() {
-        Table["int"] = TokenKind::IntKeyword;
-        Table["double"] = TokenKind::DoubleKeyword;
+        // Preload keywords
+        auto intId = std::make_unique<IdentifierInfo>("int");
+        intId->setKeyword(true);
+        Table["int"] = std::move(intId);
+
+        auto doubleId = std::make_unique<IdentifierInfo>("double");
+        doubleId->setKeyword(true);
+        Table["double"] = std::move(doubleId);
     }
 
-    TokenKind get(const std::string& name) const {
-        auto it = Table.find(name);
+    // Returns existing or creates new IdentifierInfo for Name
+    IdentifierInfo* get(const std::string& Name) {
+        auto it = Table.find(Name);
         if (it != Table.end())
-            return it->second;
-        return TokenKind::Identifier;
+            return it->second.get();
+
+        // Not found, create new IdentifierInfo (not keyword)
+        auto II = std::make_unique<IdentifierInfo>(Name);
+        IdentifierInfo* ptr = II.get();
+        Table[Name] = std::move(II);
+        return ptr;
     }
-};
-
-
-// === IdentifierInfo holds info about keywords and identifiers ===
-struct IdentifierInfo {
-    std::string name;
-    bool isKeywordFlag;
-
-    IdentifierInfo(std::string n, bool kw = false) : name(std::move(n)), isKeywordFlag(kw) {}
-
-    bool isKeyword() const { return isKeywordFlag; }
 };

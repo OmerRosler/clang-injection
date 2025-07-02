@@ -4,48 +4,7 @@
 
 #include "ASTContext.hpp"
 #include "Preprocessor.hpp"
-// === Phase 2 Resolver ===
-struct Phase2Resolver {
-public:
-    // simple type table mapping names to Expr* (pretend these are fully resolved Exprs)
-    std::unordered_map<std::string, Type*> typeTable;
-    std::unordered_map<std::string, Expr*> exprTable;
-
-    void resolveType(Type& type) {
-        switch (type.typeClass) {
-        case Type::TypeClass::Builtin:
-            // nothing to resolve
-            break;
-        case Type::TypeClass::Unresolved: {
-            auto& ut = static_cast<UnresolvedType&>(type);
-            if (auto it = typeTable.find(ut.name); it != typeTable.end()) {
-                ut.resolved = it->second;
-            }
-            else {
-                std::cerr << "Unresolved type: " << ut.name << "\n";
-            }
-            break;
-        }
-        }
-    }
-
-    //void resolve(Expr* e) {
-    //    if (!e) return;
-
-    //    if (isa<UnresolvedTypeExpr>(e)) {
-    //        auto* ut = cast<UnresolvedTypeExpr>(e);
-    //        auto it = typeTable.find(ut->name);
-    //        if (it != typeTable.end()) {
-    //            ut->resolved = it->second;
-    //        }
-    //        else {
-    //            std::cerr << "Unresolved type: " << ut->name << "\n";
-    //        }
-    //    }
-    //    // extend here for recursive walk if your Exprs had children
-    //}
-};
-
+#include "DeclContext.hpp"
 
 class Sema {
     // === Core State ===
@@ -62,10 +21,45 @@ class Sema {
     //std::vector<DeclContext*> ContextStack;
 
     // === Symbol Tables ===
-    //DeclContext* CurContext;         // E.g. current function, class, etc.
+    DeclContext& CurrentDeclContext;         // E.g. current function, class, etc.
 
+
+    // Lookup name in current DeclContext
+    NamedDecl* lookupName(const std::string& name) {
+        return CurrentDeclContext.lookup(name);
+    }
 public:
-    explicit Sema(ASTContext& c) : Context(c) {}
+    explicit Sema(ASTContext& c, DeclContext& CurDeclContext) : Context(c), CurrentDeclContext(CurDeclContext) {}
+
+    Type* ActOnTypeName(const std::string& name) {
+        // First check if builtin
+        if (name == "int" || name == "double") return ActOnBuiltinType(name);
+
+        // Lookup in DeclContext
+        NamedDecl* decl = CurrentDeclContext.lookup(name);
+        if (decl) {
+            // For toy model, return resolved type with the name of decl
+            return Context.create<ResolvedType>(decl->getName());
+        }
+        else {
+            // Unknown type - create unresolved placeholder
+            return Context.create<UnresolvedType>(name);
+        }
+    }
+
+
+    Expr* ActOnUnknownName(const std::string& name) {
+        NamedDecl* decl = lookupName(name);
+        if (decl) {
+            // For simplicity, return a resolved type expression wrapping the decl's name
+            return Context.create<UnknownNameExpr>(decl->getName());
+            // In real clang, you'd return a DeclRefExpr or similar node referencing decl
+        }
+        else {
+            // Name not found, unknown
+            return Context.create<UnknownNameExpr>(name);
+        }
+    }
 
     PlusExpr* ActOnPlusExpr(Expr* lhs, Expr* rhs) {
         // Perform semantic checks (omitted here)
@@ -84,9 +78,6 @@ public:
         return Context.create<DoubleLiteralExpr>(value);
     }
 
-    UnknownNameExpr* ActOnUnknownName(const std::string& name) {
-        return Context.create<UnknownNameExpr>(name);
-    }
     BuiltinType* ActOnBuiltinType(const std::string& name) {
         if (name == "int") 
             return Context.create<BuiltinType>(BuiltinType::BuiltinKind::Int);
