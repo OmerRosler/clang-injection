@@ -4,17 +4,18 @@
 #include <vector>
 
 #include "Parser.hpp"
-//#include "Sema.hpp"
+#include "Sema.hpp"
 // === Example Usage ===
 
 int main() {
     ASTContext ctx;
-    Parser parser({ "int", "+", "double", "*", "foo" }, ctx);
+    Sema sema(ctx);
+    Parser parser({ "int", "+", "double", "*", "foo" }, sema);
     Expr* expr = parser.parseExpr();
     expr->print(std::cout); // prints: (42 + (3.14 * <unknown> foo))
     std::cout << "\n";
 
-    Parser typeParser({ "int" }, ctx);
+    Parser typeParser({ "int" }, sema);
     Type* type = typeParser.parseType();
     type->print(std::cout); // prints: int
     std::cout << "\n";

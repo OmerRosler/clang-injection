@@ -124,6 +124,8 @@
   <ItemGroup>
     <ClCompile Include="ASTType.hpp" />
     <ClCompile Include="gpt_code.cpp" />
+    <ClCompile Include="ParseExpr.cpp" />
+    <ClCompile Include="ParseType.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ASTExpr.hpp" />

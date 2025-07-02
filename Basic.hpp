@@ -10,6 +10,9 @@ struct IntLiteral;
 struct VarExpr;
 struct AddExpr;
 
+struct Parser;
+struct Sema;
+
 // isa implementation
 template<typename To, typename From>
 bool isa(const From* f) {
