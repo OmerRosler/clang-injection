@@ -4,15 +4,16 @@
 #include <vector>
 #include <memory>
 #include <unordered_map>
+
 #include "Basic.hpp"
-// Forward declaration
-struct Type;
-struct ASTContext;
 
 // === Base class for all types ===
-struct Type {
+class Type {
+public:
     enum class TypeClass { Builtin, Resolved, Unresolved };
+
     TypeClass typeClass;
+
     explicit Type(TypeClass tc) : typeClass(tc) {}
     virtual ~Type() = default;
 

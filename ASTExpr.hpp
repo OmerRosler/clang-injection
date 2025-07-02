@@ -87,17 +87,16 @@ struct MultiplyExpr : Expr {
     }
 };
 
-// === UnknownNameExpr ===
-struct UnknownNameExpr : Expr {
+struct DeclRefExpr : Expr {
+    NamedDecl* decl;   // pointer to resolved declaration
+    explicit DeclRefExpr(NamedDecl* d) : Expr(ExprClass::UnknownName), decl(d) {}
+    void print(std::ostream& os) const override;
+};
+
+struct UnresolvedNameExpr : Expr {
     std::string name;
-
-    explicit UnknownNameExpr(std::string n) : Expr(ExprClass::UnknownName), name(std::move(n)) {}
-
+    explicit UnresolvedNameExpr(std::string n) : Expr(ExprClass::UnknownName), name(std::move(n)) {}
     void print(std::ostream& os) const override {
-        os << "<unknown name> " << name;
-    }
-
-    static bool classof(const Expr* e) {
-        return e && e->exprClass == ExprClass::UnknownName;
+        os << "<unresolved> " << name;
     }
 };

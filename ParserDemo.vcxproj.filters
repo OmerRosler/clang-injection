@@ -34,6 +34,9 @@
     <Filter Include="Source Files\Lexer">
       <UniqueIdentifier>{9f6a2176-a462-4c5e-869f-1d94dafd47f4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\AST">
+      <UniqueIdentifier>{6bad7735-8a46-4483-bc5b-9acb154ec7e2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -53,6 +56,15 @@
     </ClCompile>
     <ClCompile Include="Parser.cpp">
       <Filter>Source Files\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="ASTDecl.hpp">
+      <Filter>Header Files\AST</Filter>
+    </ClCompile>
+    <ClCompile Include="ASTExpr.cpp">
+      <Filter>Source Files\AST</Filter>
+    </ClCompile>
+    <ClCompile Include="ASTDecl.cpp">
+      <Filter>Source Files\AST</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

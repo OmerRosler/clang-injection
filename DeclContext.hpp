@@ -3,15 +3,8 @@
 #include <memory>
 #include <unordered_map>
 #include "Basic.hpp"
-// === Decl ===
-class NamedDecl {
-    std::string Name;
+#include "ASTDecl.hpp"
 
-public:
-    explicit NamedDecl(std::string N) : Name(std::move(N)) {}
-    const std::string& getName() const { return Name; }
-    virtual ~NamedDecl() = default;
-};
 
 // === StoredDeclsMap ===
 using StoredDeclsMap = std::unordered_map<std::string, NamedDecl*>;
@@ -32,4 +25,5 @@ public:
         auto it = LookupPtr->find(name);
         return it != LookupPtr->end() ? it->second : nullptr;
     }
+
 };

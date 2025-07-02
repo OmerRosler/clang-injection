@@ -11,8 +11,8 @@ int main() {
     ASTContext ctx;
     DeclContext dc;
 
-    NamedDecl myType("foo");
-    dc.addDecl(&myType);
+    //NamedDecl myType("foo");
+    //dc.addDecl(&myType);
 
     Sema sema(ctx, dc);
 

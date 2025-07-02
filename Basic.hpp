@@ -3,19 +3,46 @@
 #include <typeinfo>
 
 // Forward declarations
-struct Type;
+
+//AST
+
+// Types
+class Type;
+
 struct BuiltinType;
+struct ResolvedType;
 struct UnresolvedType;
 
-struct Expr;
-struct IntLiteral;
-struct VarExpr;
-struct AddExpr;
+// Statements
+class Stmt;
 
-struct Lexer;
-struct Preprocessor;
-struct Parser;
-struct Sema;
+struct Expr;
+
+struct IntLiteralExpr;
+struct DoubleLiteralExpr;
+
+struct DeclRefExpr;
+struct UnresolvedNameExpr;
+
+struct PlusExpr;
+struct MultiplyExpr;
+
+//Declarations
+class Decl;
+
+struct NamedDecl;
+
+struct VarDecl;
+struct TypedefDecl;
+
+
+//Compilation phases
+class Preprocessor;
+class Lexer;
+class Parser;
+class Sema;
+
+//static polymorphism helpers
 
 // isa implementation
 template<typename To, typename From>

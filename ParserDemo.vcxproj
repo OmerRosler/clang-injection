@@ -122,6 +122,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ASTDecl.cpp" />
+    <ClCompile Include="ASTDecl.hpp" />
+    <ClCompile Include="ASTExpr.cpp" />
     <ClCompile Include="ASTType.hpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Lexer.cpp" />

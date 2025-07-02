@@ -47,18 +47,12 @@ public:
         }
     }
 
-
-    Expr* ActOnUnknownName(const std::string& name) {
-        NamedDecl* decl = lookupName(name);
-        if (decl) {
-            // For simplicity, return a resolved type expression wrapping the decl's name
-            return Context.create<UnknownNameExpr>(decl->getName());
-            // In real clang, you'd return a DeclRefExpr or similar node referencing decl
-        }
-        else {
-            // Name not found, unknown
-            return Context.create<UnknownNameExpr>(name);
-        }
+    Expr* ActOnIdentifier(const std::string& name) {
+        NamedDecl* decl = lookupName(name); // lookup inside Sema
+        if (decl)
+            return Context.create<DeclRefExpr>(decl);
+        else
+            return Context.create<UnresolvedNameExpr>(name);
     }
 
     PlusExpr* ActOnPlusExpr(Expr* lhs, Expr* rhs) {

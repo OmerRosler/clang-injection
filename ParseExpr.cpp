@@ -33,7 +33,7 @@ Expr* Parser::parsePrimaryExpr() {
     else if (Tok.Kind == TokenKind::Identifier) {
         std::string name = Tok.Text;
         ConsumeToken();
-        return Actions.ActOnUnknownName(name);
+        return Actions.ActOnIdentifier(name);
     }
     else {
         throw std::runtime_error("Unexpected token in primary expression");

@@ -2,10 +2,14 @@
 #include "Basic.hpp"
 
 // === Base class for all statements and expressions ===
-struct Stmt {
-    enum class StmtClass { Expr, /*...other stmt kinds*/ };
-    StmtClass stmtClass;
+class Stmt {
+public:
+    enum class StmtClass { Expr, /*...other stmt kinds*/ }; 
+
     explicit Stmt(StmtClass sc) : stmtClass(sc) {}
+
+    StmtClass stmtClass;
+
     virtual ~Stmt() = default;
 
     static bool classof(const Stmt* s) {
