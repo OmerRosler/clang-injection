@@ -1,39 +1,26 @@
 #include "Sema.hpp"
 
-//Type* Sema::ActOnTypeName(IdentifierInfo* II) {
-//    // First check if builtin
-//    auto name = II->getName();
-//    if (II->isKeyword())
-//    {
-//        if (name == "int" || name == "double")
-//        {
-//            return ActOnBuiltinType(II);
-//        }
-//        else
-//        {
-//            throw std::runtime_error("Expected a type, got keyword");
-//        }
-//    }
-//    // Lookup in DeclContext
-//    NamedDecl* decl = CurrentDeclContext->lookup(II);
-//    if (decl) {
-//        // For toy model, return resolved type with the name of decl
-//        return Context.create<ResolvedType>(II);
-//    }
-//    else {
-//        // Unknown type - create unresolved placeholder
-//        return Context.create<UnresolvedType>(II);
-//    }
-//}
+NamedDecl* Sema::LookupSingleName(DeclContext* DC, IdentifierInfo* II)
+{
+    return DC->lookup(II);
+}
 
-Expr* Sema::ActOnIdentifier(IdentifierInfo* II) {
-    NamedDecl* decl = lookupName(II); // lookup inside Sema
-    if (decl)
-        return Context.create<DeclRefExpr>(decl);
+Type* Sema::ActOnIdentifierType(IdentifierInfo* II) {
+    if (NamedDecl* D = LookupSingleName(GetCurrentDeclContext(), II)) {
+        if (auto* TD = dyn_cast<TypedefDecl>(D)) {
+            return Context.getTypeDeclType(TD); // returns TypedefType*
+        }
+    }
+
+    return Context.create<UnresolvedType>(II);
+}
+
+Expr* Sema::ActOnIdentifierExpr(IdentifierInfo* II) {
+    if (NamedDecl* D = LookupSingleName(GetCurrentDeclContext(), II))
+        return Context.create<DeclRefExpr>(D);
     else
         return Context.create<UnresolvedNameExpr>(II);
 }
-
 
 VarDecl* Sema::ActOnVarDecl(Type* type, IdentifierInfo* id, Expr* init)
 {

@@ -30,37 +30,16 @@ class Sema {
     }
 
 public:
-    Type* getTypeName(IdentifierInfo* II) {
-        NamedDecl* ND = CurrentDeclContext->lookup(II);
-        if (!ND)
-            return nullptr; // unknown type
-
-        // Is it actually a typedef?
-        auto* TD = dyn_cast<TypedefDecl>(ND);
-        if (!TD)
-            return nullptr; // not a type declaration
-
-        return Context.getTypeDeclType(TD);
-    }
-
     DeclContext* GetCurrentDeclContext() const
     {
         return CurrentDeclContext;
     }
+    NamedDecl* LookupSingleName(DeclContext* DC, IdentifierInfo* II);
 
     explicit Sema(ASTContext& c, DeclContext* CurDeclContext) : Context(c), CurrentDeclContext(CurDeclContext) {}
 
-    /*IdentifierInfo* getIdentifierInfo(const std::string& name) {
-        return Context.getIdentifierTable().lookup(name);
-    }*/
-
-    Type* getTypeForIdentifier(IdentifierInfo* II) {
-        return getTypeName(II); // You already have getTypeName
-    }
-    //Type* ActOnTypeName(IdentifierInfo* II);
-
-    Expr* ActOnIdentifier(IdentifierInfo* II);
-
+    Expr* ActOnIdentifierExpr(IdentifierInfo* II);
+    Type* ActOnIdentifierType(IdentifierInfo* II);
 
     VarDecl* ActOnVarDecl(Type* type, IdentifierInfo* id, Expr* init = nullptr);
     VarDecl* ActOnVarDecl(Type* type, IdentifierInfo* id, DeclContext* DC);
