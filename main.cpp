@@ -2,6 +2,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <array>
 
 #include "Parser.hpp"
 #include "Sema.hpp"
@@ -11,35 +12,22 @@ int main() {
     ASTContext ctx;
     DeclContext dc;
 
-    //NamedDecl myType("foo");
-    //dc.addDecl(&myType);
-
     Sema sema(ctx, &dc);
 
-    auto lexer = std::make_unique<Lexer>(std::vector<Token>{
-        {TokenKind::IntLiteral, "42"},
-        { TokenKind::Plus, "+" },
-        { TokenKind::DoubleLiteral, "3.14" },
-        { TokenKind::Star, "*" },
-        { TokenKind::Identifier, "foo" },
-        { TokenKind::EndOfFile, "" }
-    });
-    Preprocessor pp(std::move(lexer), ctx.getIdentifierTable());
+    std::string expr_source_code = "int foo = 3; int x = 42+3.14*foo; typedef int A; A y;";
+    Preprocessor pp(expr_source_code); //lexer is created implictly for now
     Parser parser(pp, sema);
+    std::array<Decl*, 4> decls_AST{};
+    
+    decls_AST[0]= parser.parseVarDecl();
+    decls_AST[1]= parser.parseVarDecl();
+    decls_AST[2]= parser.parseTypedef();
+    decls_AST[3]= parser.parseVarDecl();
 
-    Expr* expr = parser.parseExpr();
-    expr->print(std::cout); std::cout << "\n";
-
-    auto typeLexer = std::make_unique<Lexer>(std::vector<Token>{
-        {TokenKind::IntKeyword, "int"},
-        {TokenKind::Identifier, "T" }});
-
-    Preprocessor typePP(std::move(typeLexer), ctx.getIdentifierTable());
-    Parser typeParser(typePP, sema);
-    Type* type1 = typeParser.parseType();
-    Type* type2 = typeParser.parseType();
-    type1->print(std::cout); std::cout << "\n";
-    type2->print(std::cout); std::cout << "\n";
+    for (auto* decl : decls_AST)
+    {
+        decl->print(std::cout); std::cout << "\n";
+    }
 
     return 0;
 

@@ -8,3 +8,7 @@ void DeclRefExpr::print(std::ostream& os) const {
     else
         os << "<null decl>";
 }
+
+void UnresolvedNameExpr::print(std::ostream& os) const {
+    os << "<unknown> " << Ident->getName();
+}

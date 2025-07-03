@@ -37,6 +37,12 @@
     <Filter Include="Source Files\AST">
       <UniqueIdentifier>{6bad7735-8a46-4483-bc5b-9acb154ec7e2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Preprocessor">
+      <UniqueIdentifier>{6e3e97cf-87b8-4df0-9788-2544d36e2712}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Preprocessor">
+      <UniqueIdentifier>{9053e9ca-1d6c-4b22-8f1a-e48c735d6bf5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -72,6 +78,15 @@
     <ClCompile Include="ParseDecl.cpp">
       <Filter>Source Files\Parser</Filter>
     </ClCompile>
+    <ClCompile Include="SemaActions.cpp">
+      <Filter>Source Files\Sema</Filter>
+    </ClCompile>
+    <ClCompile Include="IdentifierTable.cpp">
+      <Filter>Source Files\Preprocessor</Filter>
+    </ClCompile>
+    <ClCompile Include="IdentifierInfo.cpp">
+      <Filter>Source Files\Preprocessor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Basic.hpp">
@@ -95,17 +110,20 @@
     <ClInclude Include="Lexer.hpp">
       <Filter>Header Files\Lexer</Filter>
     </ClInclude>
-    <ClInclude Include="Preprocessor.hpp">
-      <Filter>Header Files\Lexer</Filter>
-    </ClInclude>
-    <ClInclude Include="IdentifierTable.hpp">
-      <Filter>Header Files\Lexer</Filter>
-    </ClInclude>
     <ClInclude Include="Token.hpp">
       <Filter>Header Files\Lexer</Filter>
     </ClInclude>
     <ClInclude Include="DeclContext.hpp">
       <Filter>Header Files\Sema</Filter>
+    </ClInclude>
+    <ClInclude Include="Preprocessor.hpp">
+      <Filter>Header Files\Preprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="IdentifierTable.hpp">
+      <Filter>Header Files\Preprocessor</Filter>
+    </ClInclude>
+    <ClInclude Include="IdentifierInfo.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

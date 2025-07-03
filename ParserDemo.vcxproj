@@ -122,6 +122,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="IdentifierInfo.cpp" />
+    <ClCompile Include="IdentifierTable.cpp" />
+    <ClCompile Include="SemaActions.cpp" />
     <ClCompile Include="ASTDecl.cpp" />
     <ClCompile Include="ASTDecl.hpp" />
     <ClCompile Include="ASTExpr.cpp" />
@@ -140,6 +143,7 @@
     <ClInclude Include="ASTStmt.hpp" />
     <ClInclude Include="Basic.hpp" />
     <ClInclude Include="DeclContext.hpp" />
+    <ClInclude Include="IdentifierInfo.hpp" />
     <ClInclude Include="IdentifierTable.hpp" />
     <ClInclude Include="Lexer.hpp" />
     <ClInclude Include="Parser.hpp" />

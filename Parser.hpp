@@ -10,6 +10,18 @@ private:
 
     void ConsumeToken();
 
+    IdentifierInfo* getIdentifier() const {
+        return Tok.getIdentifierInfo(); // assumes Token has it
+    }
+
+    const char* getLiteralText() const {
+        return Tok.getLiteralText(); // assumes Token has this
+    }
+
+    unsigned getLiteralLength() const {
+        return Tok.getLength(); // used for parsing numbers
+    }
+
 public:
     Parser(Preprocessor& pp, Sema& s)
         : PP(pp), Actions(s) {
@@ -18,8 +30,8 @@ public:
 
 
     int getPrecedence() const {
-        if (Tok.is(TokenKind::Plus)) return 10;
-        if (Tok.is(TokenKind::Star)) return 20;
+        if (Tok.is(TokenKind::plus)) return 10;
+        if (Tok.is(TokenKind::star)) return 20;
         return -1;
     }
 
@@ -31,11 +43,13 @@ public:
 
     Expr* parseBinOpRHS(int exprPrec, Expr* lhs);
 
-    Type* parseType();
+    Type* parseTypeName();
 
-    Type* ParseTypeSpecifier();
+    TypedefDecl* parseTypedef();
 
-    Decl* ParseDeclaration();
+    VarDecl* parseVarDecl();
+
+    Decl* parseDeclaration();
 
 protected:
     Preprocessor& PP;

@@ -4,6 +4,15 @@
 
 // Forward declarations
 
+//Preprocessor
+struct IdentifierInfo;
+struct IdentifierTable;
+
+//Lexer
+struct Token;
+class Decl;
+
+
 //AST
 
 // Types

@@ -94,9 +94,10 @@ struct DeclRefExpr : Expr {
 };
 
 struct UnresolvedNameExpr : Expr {
-    std::string name;
-    explicit UnresolvedNameExpr(std::string n) : Expr(ExprClass::UnknownName), name(std::move(n)) {}
-    void print(std::ostream& os) const override {
-        os << "<unresolved> " << name;
-    }
+    IdentifierInfo* Ident;
+
+    explicit UnresolvedNameExpr(IdentifierInfo* II)
+        : Expr(ExprClass::UnknownName), Ident(II) {}
+
+    void print(std::ostream& os) const override;
 };

@@ -2,38 +2,47 @@
 #include "Sema.hpp"
 
 Expr* Parser::ParseLiteral() {
-    std::string text = Tok.Text;
-    TokenKind kind = Tok.Kind;
-    ConsumeToken();
-
-    if (kind == TokenKind::IntKeyword) {
-        int value = std::stoi(text); // simulate clang's token-to-int conversion
-        return Actions.ActOnIntLiteral(value);
+    if (Tok.isNot(TokenKind::numeric_constant)) {
+        // In real clang, error handling here
+        return nullptr;
     }
-    else if (kind == TokenKind::DoubleKeyword) {
-        double value = std::stod(text);
-        return Actions.ActOnDoubleLiteral(value);
+
+    const char* text = getLiteralText();
+    unsigned len = getLiteralLength();
+
+    Expr* result = nullptr;
+
+    // Crude parsing logic just for demo
+    if (std::strchr(text, '.')) {
+        double value = std::strtod(text, nullptr);
+        result = Actions.ActOnDoubleLiteral(value);
     }
     else {
-        throw std::runtime_error("Unsupported literal");
+        int value = std::strtol(text, nullptr, 10);
+        result = Actions.ActOnIntLiteral(value);
     }
+
+    ConsumeToken();
+    return result;
 }
 
 Expr* Parser::parsePrimaryExpr() {
-    if (Tok.Kind == TokenKind::IntLiteral) {
-        int val = std::stoi(Tok.Text);
-        ConsumeToken();
-        return Actions.ActOnIntLiteral(val);
+    if (Tok.is(TokenKind::numeric_constant)) {
+        return ParseLiteral();
     }
-    else if (Tok.Kind == TokenKind::DoubleLiteral) {
-        double val = std::stod(Tok.Text);
+    else if (Tok.is(TokenKind::identifier)) {
+        IdentifierInfo* II = Tok.getIdentifierInfo();
         ConsumeToken();
-        return Actions.ActOnDoubleLiteral(val);
+        return Actions.ActOnIdentifier(II);
     }
-    else if (Tok.Kind == TokenKind::Identifier) {
-        std::string name = Tok.Text;
-        ConsumeToken();
-        return Actions.ActOnIdentifier(name);
+    else if (Tok.is(TokenKind::l_paran))
+    {
+        ConsumeToken(); // eat '('
+        Expr* SubExpr = parseExpr();
+        if (Tok.isNot(TokenKind::r_paran))
+            throw std::runtime_error("Expected ')'");
+        ConsumeToken(); // eat ')'
+        return SubExpr;
     }
     else {
         throw std::runtime_error("Unexpected token in primary expression");
@@ -47,7 +56,7 @@ Expr* Parser::parseBinOpRHS(int exprPrec, Expr* lhs) {
             return lhs;
 
         Token op = Tok;
-        ConsumeToken();
+        ConsumeToken(); //op is + or *
 
         Expr* rhs = parsePrimaryExpr();
         if (!rhs) return nullptr;
@@ -58,9 +67,9 @@ Expr* Parser::parseBinOpRHS(int exprPrec, Expr* lhs) {
             if (!rhs) return nullptr;
         }
 
-        if (op.is(TokenKind::Plus))
+        if (op.is(TokenKind::plus))
             lhs = Actions.ActOnPlusExpr(lhs, rhs);
-        else if (op.is(TokenKind::Star))
+        else if (op.is(TokenKind::star))
             lhs = Actions.ActOnMultiplyExpr(lhs, rhs);
         else
             throw std::runtime_error("Unknown binary operator");

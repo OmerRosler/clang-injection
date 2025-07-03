@@ -1,18 +1,29 @@
 #include "Parser.hpp"
 #include "Sema.hpp"
-Type* Parser::parseType() {
-    // For simplicity, assume a single token type name (identifier or builtin keyword)
-    if (Tok.Kind == TokenKind::Identifier ||
-        Tok.Kind == TokenKind::IntKeyword ||
-        Tok.Kind == TokenKind::DoubleKeyword)
-    {
-        std::string name = Tok.Text;
-        ConsumeToken();  // consume the token
+Type* Parser::parseTypeName() {
+    Type* Ty = nullptr;
 
-        // Delegate to Sema for semantic resolution and node creation
-        return Actions.ActOnTypeName(name);
+    switch (Tok.getKind()) {
+    case TokenKind::kw_int:
+        Ty = Actions.ActOnBuiltinType(BuiltinType::Int);
+        break;
+
+    case TokenKind::kw_double:
+        Ty = Actions.ActOnBuiltinType(BuiltinType::Double);
+        break;
+
+    case TokenKind::identifier: {
+        IdentifierInfo* II = getIdentifier();
+        Ty = Actions.getTypeName(II); // could be a typedef, for example
+        break;
     }
-    else {
-        throw std::runtime_error("Expected type name");
+
+    default:
+        // In Clang this would trigger a diagnostic
+        return nullptr;
     }
+
+    ConsumeToken(); // eat the token regardless
+    return Ty;
+
 }

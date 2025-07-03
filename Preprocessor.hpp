@@ -3,27 +3,24 @@
 #include "IdentifierTable.hpp"
 #include "Lexer.hpp"
 
-struct Preprocessor {
-
+class Preprocessor {
+    friend class Lexer;
 public:
-    Preprocessor(std::unique_ptr<Lexer> lexer, IdentifierTable& tbl)
-        : TheLexer(std::move(lexer)), Idents(tbl) {}
+    Preprocessor(const char* input, size_t length)
+        : Idents(), TheLexer(std::make_unique<Lexer>(*this, input, length)) {}
+    Preprocessor(std::string_view sv) : Preprocessor(sv.data(), sv.length()) {}
 
-    void Lex(Token& Tok) {
-        TheLexer->Lex(Tok);
-        if (Tok.Kind == TokenKind::Identifier) {
-            IdentifierInfo* II = Idents.get(Tok.Text);
-            // Update token kind based on keyword info
-            if (II->isKeyword()) {
-                if (II->getName() == "int")
-                    Tok.Kind = TokenKind::IntKeyword;
-                else if (II->getName() == "double")
-                    Tok.Kind = TokenKind::DoubleKeyword;
-                // Add more keywords as needed
+    void Lex(Token& Result) {
+        TheLexer->Lex(Result);
+
+        // Resolve identifiers to keywords
+        if (Result.Kind == TokenKind::identifier && Result.II) {
+            if (Result.II->isKeyword()) {
+                Result.Kind = Result.II->getTokenID(); // Update kind to keyword
             }
         }
     }
 private:
+    IdentifierTable Idents;
     std::unique_ptr<Lexer> TheLexer;
-    IdentifierTable& Idents;
 };

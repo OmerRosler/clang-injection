@@ -2,48 +2,80 @@
 #include "Sema.hpp"
 #include "Preprocessor.hpp"
 
-Type* Parser::ParseTypeSpecifier() {
-    if (Tok.Kind == TokenKind::Identifier ||
-        Tok.Kind == TokenKind::IntKeyword ||
-        Tok.Kind == TokenKind::DoubleKeyword) {
-        std::string name = Tok.Text;
-        ConsumeToken();
-        return Actions.ActOnTypeName(name);
-    }
-    else {
-        throw std::runtime_error("Expected a type specifier");
-    }
+// Entry point
+Decl* Parser::parseDeclaration() {
+    //if (Tok.Kind == TokenKind::Identifier && Tok.Text == "typedef") {
+    //    return ParseTypedef();
+    //}
+
+    //// Otherwise, parse type first
+    //Type* Ty = Actions.getTypeName(*this);
+    //if (!Ty) return nullptr;
+
+    //return ParseSingleDeclAfterType(Ty);
+    return nullptr;
 }
 
-Decl* Parser::ParseDeclaration() {
-    // Parse type
-    Type* type = ParseTypeSpecifier();
 
-    // Expect identifier
-    if (Tok.Kind != TokenKind::Identifier)
-        throw std::runtime_error("Expected identifier after type");
 
-    IdentifierInfo* id = Actions.getIdentifierInfo(Tok.Text);
+// Handles: 'typedef int Foo;'
+TypedefDecl* Parser::parseTypedef() {
+    ConsumeToken(); // eat 'typedef'
+
+    Type* underlyingType = parseTypeName();
+    if (!underlyingType) {
+        throw std::runtime_error("Error: Expected type after typedef");
+    }
+
+    // Expect an identifier (the new typedef name)
+    if (Tok.isNot(TokenKind::identifier)) {
+        throw std::runtime_error("Error: Expected identifier after typedef type");
+    }
+
+    IdentifierInfo* II = Tok.getIdentifierInfo();
+
+    ConsumeToken(); // consume the identifier
+
+    // Expect a semicolon
+    if (Tok.isNot(TokenKind::semicolon)) {
+        throw std::runtime_error("Error: Expected ';' after typedef declaration");
+    }
+    ConsumeToken(); // consume ';'
+
+    // Semantic action: create the TypedefDecl
+    return Actions.ActOnTypedefDecl(underlyingType, II, Actions.GetCurrentDeclContext());
+}
+
+VarDecl* Parser::parseVarDecl() {
+    Type* Ty = parseTypeName();
+    if (!Ty) return nullptr;
+
+    if (Tok.isNot(TokenKind::identifier)) {
+        throw std::runtime_error("Expected identifier in variable declaration");
+    }
+
+    IdentifierInfo* VarName = Tok.getIdentifierInfo();
     ConsumeToken();
 
-    // typedef or var?
-    if (type && type->typeClass == Type::TypeClass::Builtin &&
-        static_cast<BuiltinType*>(type)->kind == BuiltinType::BuiltinKind::Int &&
-        id->getName() == "typedef") {
-        throw std::runtime_error("We don't parse 'typedef int typedef;");
+    Expr* Init;
+    if (Tok.is(TokenKind::semicolon))
+    {
+        Init = nullptr;
+    }
+    else if (Tok.is(TokenKind::equal)) {
+        //read initializer
+        ConsumeToken();
+        Init = parseExpr();
+    }
+    else {
+        throw std::runtime_error("Expected '=' in variable declaration");
     }
 
-    // Optional '=' for initialization or typedef
-    if (Tok.Kind == TokenKind::EndOfFile || Tok.Text == ";") {
-        return Actions.ActOnVarDecl(type, id);  // no initializer
+    // Expect a semicolon
+    if (Tok.isNot(TokenKind::semicolon)) {
+        throw std::runtime_error("Error: Expected ';' after variable declaration");
     }
-
-    if (Tok.Kind == TokenKind::Plus || Tok.Kind == TokenKind::Star ||
-        Tok.Kind == TokenKind::IntKeyword || Tok.Kind == TokenKind::DoubleKeyword ||
-        Tok.Kind == TokenKind::Identifier) {
-        Expr* init = parseExpr();
-        return Actions.ActOnVarDecl(type, id, init);
-    }
-
-    throw std::runtime_error("Unexpected token in declaration");
+    ConsumeToken(); // consume ';'
+    
+    return Actions.ActOnVarDecl(Ty, VarName, Init, Actions.GetCurrentDeclContext());
 }

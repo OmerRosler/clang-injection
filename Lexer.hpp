@@ -1,21 +1,34 @@
 #pragma once
-#include <vector>
 #include "Token.hpp"
 
 // === Lexer ===
 // Simplified internal Lexer, only exposes minimal interface internally
 class Lexer {
-    std::vector<Token> Tokens;
-    size_t CurIdx = 0;
+    Preprocessor& PP;
+
+    //original buffer
+    const char* BufferStart;
+    const char* BufferEnd;
+
+    //current ptr
+    const char* BufferPtr;
+
+    //utility methods
+    IdentifierTable& getIdents();
+    const IdentifierTable& getIdents() const;
+
+    void SkipWhitespace();
+    bool LexPunctuation(char c, Token& Tok);
+
+    static bool set_punctuation(char c, TokenKind& Result);
+    static bool isAlpha(char c) { return std::isalpha(static_cast<unsigned char>(c)); }
+    static bool isDigit(char c) { return std::isdigit(static_cast<unsigned char>(c)); }
+    static bool isAlnum(char c) { return std::isalnum(static_cast<unsigned char>(c)); }
 
 public:
-    explicit Lexer(const std::vector<Token>& tokens) : Tokens(tokens) {}
+    Lexer(Preprocessor& PP, const char* input, size_t length)
+        : BufferStart(input), BufferPtr(input), BufferEnd(input + length), PP(PP) {}
 
-    void Lex(Token& result) {
-        result = (CurIdx < Tokens.size()) ? Tokens[CurIdx] : eofToken;
-        if (CurIdx < Tokens.size()) ++CurIdx;
-    }
-
-private:
-    static Token eofToken;
+    void Lex(Token& Result);
+    
 };

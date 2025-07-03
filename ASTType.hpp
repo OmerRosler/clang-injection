@@ -47,26 +47,18 @@ struct BuiltinType : Type {
 };
 
 struct UnresolvedType : Type {
-    std::string name;
+    IdentifierInfo* II;
     // Once resolved, this points to the actual Type (or nullptr if unresolved)
     Type* resolved = nullptr;
 
-    explicit UnresolvedType(std::string n)
-        : Type(TypeClass::Unresolved), name(std::move(n)) {}
+    explicit UnresolvedType(IdentifierInfo* II)
+        : Type(TypeClass::Unresolved), II(II) {}
 
     static bool classof(const Type* e) {
         return e->typeClass == TypeClass::Unresolved;
     }
 
-    void print(std::ostream& os) const override {
-        if (resolved) {
-            os << "<resolved type> ";
-            resolved->print(os);
-        }
-        else {
-            os << "<unresolved type> " << name;
-        }
-    }
+    void print(std::ostream& os) const override;
 };
 
 
@@ -78,7 +70,7 @@ struct TypedefType : Type {
 
 
 struct ResolvedType : Type {
-    std::string name;
-    explicit ResolvedType(std::string n) : Type(TypeClass::Resolved), name(std::move(n)) {}
-    void print(std::ostream& os) const override { os << name; }
+    IdentifierInfo* II;
+    explicit ResolvedType(IdentifierInfo* II) : Type(TypeClass::Resolved), II(II) {}
+    void print(std::ostream& os) const override;
 };

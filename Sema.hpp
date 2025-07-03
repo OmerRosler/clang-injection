@@ -25,105 +25,58 @@ class Sema {
 
 
     // Lookup name in current DeclContext
-    NamedDecl* lookupName(const std::string& name) {
-        return CurrentDeclContext->lookup(name);
+    NamedDecl* lookupName(IdentifierInfo* II) {
+        return CurrentDeclContext->lookup(II);
     }
 
-    Type* getTypeName(const std::string& name) {
-        // First check if builtin
-        if (name == "int" || name == "double") return ActOnBuiltinType(name);
-
-        // Lookup in DeclContext
-        NamedDecl* decl = CurrentDeclContext->lookup(name);
-        if (isa<TypedefDecl>(decl)) {
-            TypedefDecl* TD = cast<TypedefDecl>(decl);
-            Type* Ty = Context.getTypeDeclType(TD);
-        }
-        else {
-            // Error or unresolved
-        }
-        if (decl) {
-            // For toy model, return resolved type with the name of decl
-            return Context.create<ResolvedType>(decl->getName());
-        }
-        else {
-            // Unknown type - create unresolved placeholder
-            return Context.create<UnresolvedType>(name);
-        }
-    }
 public:
+    Type* getTypeName(IdentifierInfo* II) {
+        NamedDecl* ND = CurrentDeclContext->lookup(II);
+        if (!ND)
+            return nullptr; // unknown type
+
+        // Is it actually a typedef?
+        auto* TD = dyn_cast<TypedefDecl>(ND);
+        if (!TD)
+            return nullptr; // not a type declaration
+
+        return Context.getTypeDeclType(TD);
+    }
+
+    DeclContext* GetCurrentDeclContext() const
+    {
+        return CurrentDeclContext;
+    }
+
     explicit Sema(ASTContext& c, DeclContext* CurDeclContext) : Context(c), CurrentDeclContext(CurDeclContext) {}
 
-    IdentifierInfo* getIdentifierInfo(const std::string& name) {
-        return Context.getIdentifierTable().get(name);
-    }
+    /*IdentifierInfo* getIdentifierInfo(const std::string& name) {
+        return Context.getIdentifierTable().lookup(name);
+    }*/
 
-    Type* getTypeForIdentifier(IdentifierInfo* id) {
-        return getTypeName(id->getName()); // You already have getTypeName
+    Type* getTypeForIdentifier(IdentifierInfo* II) {
+        return getTypeName(II); // You already have getTypeName
     }
-    Type* ActOnTypeName(const std::string& name) {
-        // First check if builtin
-        if (name == "int" || name == "double") return ActOnBuiltinType(name);
+    //Type* ActOnTypeName(IdentifierInfo* II);
 
-        // Lookup in DeclContext
-        NamedDecl* decl = CurrentDeclContext->lookup(name);
-        if (decl) {
-            // For toy model, return resolved type with the name of decl
-            return Context.create<ResolvedType>(decl->getName());
-        }
-        else {
-            // Unknown type - create unresolved placeholder
-            return Context.create<UnresolvedType>(name);
-        }
-    }
-
-    Expr* ActOnIdentifier(const std::string& name) {
-        NamedDecl* decl = lookupName(name); // lookup inside Sema
-        if (decl)
-            return Context.create<DeclRefExpr>(decl);
-        else
-            return Context.create<UnresolvedNameExpr>(name);
-    }
+    Expr* ActOnIdentifier(IdentifierInfo* II);
 
 
-    Decl* ActOnVarDecl(Type* type, IdentifierInfo* id, Expr* init = nullptr) {
-        VarDecl* VD = Context.create<VarDecl>(id, type, init);
-        CurrentDeclContext->addDecl(VD);
-        return VD;
-    }
+    VarDecl* ActOnVarDecl(Type* type, IdentifierInfo* id, Expr* init = nullptr);
+    VarDecl* ActOnVarDecl(Type* type, IdentifierInfo* id, DeclContext* DC);
+    VarDecl* ActOnVarDecl(Type* type, IdentifierInfo* id, Expr* init, DeclContext* DC);
 
-    Decl* ActOnTypedefDecl(Type* type, IdentifierInfo* id) {
-        TypedefDecl* TD = Context.create<TypedefDecl>(id, type);
-        CurrentDeclContext->addDecl(TD);
-        return TD;
-    }
+    TypedefDecl* ActOnTypedefDecl(Type* type, IdentifierInfo* id, DeclContext* DC);
 
-    PlusExpr* ActOnPlusExpr(Expr* lhs, Expr* rhs) {
-        // Perform semantic checks (omitted here)
-        return Context.create<PlusExpr>(lhs, rhs);
-    }
+    PlusExpr* ActOnPlusExpr(Expr* lhs, Expr* rhs);
 
-    MultiplyExpr* ActOnMultiplyExpr(Expr* lhs, Expr* rhs) {
-        return Context.create<MultiplyExpr>(lhs, rhs);
-    }
+    MultiplyExpr* ActOnMultiplyExpr(Expr* lhs, Expr* rhs);
 
-    IntLiteralExpr* ActOnIntLiteral(int value) {
-        return Context.create<IntLiteralExpr>(value);
-    }
+    IntLiteralExpr* ActOnIntLiteral(int value);
 
-    DoubleLiteralExpr* ActOnDoubleLiteral(double value) {
-        return Context.create<DoubleLiteralExpr>(value);
-    }
+    DoubleLiteralExpr* ActOnDoubleLiteral(double value);
 
-    BuiltinType* ActOnBuiltinType(const std::string& name) {
-        if (name == "int") 
-            return Context.create<BuiltinType>(BuiltinType::BuiltinKind::Int);
-        if (name == "double") 
-            return Context.create<BuiltinType>(BuiltinType::BuiltinKind::Double);
-        throw std::runtime_error("Unknown type: " + name);
-    }
+    BuiltinType* ActOnBuiltinType(BuiltinType::BuiltinKind);
 
-    UnresolvedType* ActOnUnresolvedType(const std::string n) {
-        return Context.create<UnresolvedType>(n);
-    }
+    UnresolvedType* ActOnUnresolvedType(IdentifierInfo* II);
 };

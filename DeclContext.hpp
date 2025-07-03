@@ -7,7 +7,7 @@
 
 
 // === StoredDeclsMap ===
-using StoredDeclsMap = std::unordered_map<std::string, NamedDecl*>;
+using StoredDeclsMap = std::unordered_map<IdentifierInfo*, NamedDecl*>;
 
 // === DeclContext ===
 class DeclContext {
@@ -17,12 +17,18 @@ public:
     void addDecl(NamedDecl* D) {
         if (!LookupPtr)
             LookupPtr = std::make_unique<StoredDeclsMap>();
-        (*LookupPtr)[D->getName()] = D;
+        (*LookupPtr)[D->getIdentifier()] = D;
     }
 
-    NamedDecl* lookup(const std::string& name) const {
+    /*NamedDecl* lookup(const std::string& name) const {
         if (!LookupPtr) return nullptr;
         auto it = LookupPtr->find(name);
+        return it != LookupPtr->end() ? it->second : nullptr;
+    }*/
+
+    NamedDecl* lookup(IdentifierInfo* II) const {
+        if (!LookupPtr) return nullptr;
+        auto it = LookupPtr->find(II);
         return it != LookupPtr->end() ? it->second : nullptr;
     }
 
