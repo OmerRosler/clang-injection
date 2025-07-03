@@ -14,7 +14,8 @@ Type* Parser::parseTypeName() {
 
     case TokenKind::identifier: {
         IdentifierInfo* II = getIdentifier();
-        Ty = Actions.ActOnIdentifierType(II); // could be a typedef, for example
+        Ty = Actions.ActOnIdentifierType(CurrentScope, 
+            Actions.GetCurrentDeclContext(), II); // could be a typedef, for example
         break;
     }
 

@@ -2,7 +2,6 @@
 #include <string>
 #include "Basic.hpp"
 // === Token ===
-class IdentifierInfo; // Forward declared, defined elsewhere
 enum class TokenKind {
     // Primary tokens
     identifier,
@@ -15,6 +14,8 @@ enum class TokenKind {
     semicolon,
     l_paren,
     r_paren,
+    l_curly,
+    r_curly,
 
     //keywords
     kw_int,

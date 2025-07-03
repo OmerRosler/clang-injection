@@ -9,6 +9,8 @@ void DeclRefExpr::print(std::ostream& os) const {
         os << "<null decl>";
 }
 
-void UnresolvedNameExpr::print(std::ostream& os) const {
-    os << "<unknown> " << Ident->getName();
+void UnresolvedLookupExpr::print(std::ostream& os) const {
+    os << "<unresolved " << (RequiresADL ? "ADL " : "")
+        << (Overloaded ? "overload " : "")
+        << Name->getName() << ">";
 }

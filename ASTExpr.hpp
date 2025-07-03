@@ -100,15 +100,19 @@ struct MultiplyExpr : Expr {
 
 struct DeclRefExpr : Expr {
     NamedDecl* decl;   // pointer to resolved declaration
-    explicit DeclRefExpr(NamedDecl* d) : Expr(ExprClass::UnknownName), decl(d) {}
+    DeclContext* OwnerCtx = nullptr; // TODO: Handle this properly
+    explicit DeclRefExpr(NamedDecl* d, DeclContext*  OwnerCtx = nullptr) : 
+        Expr(ExprClass::UnknownName), decl(d), OwnerCtx(OwnerCtx) {}
     void print(std::ostream& os) const override;
 };
 
-struct UnresolvedNameExpr : Expr {
-    IdentifierInfo* Ident;
+struct UnresolvedLookupExpr : Expr {
+    IdentifierInfo* Name;
+    bool RequiresADL;
+    bool Overloaded;
 
-    explicit UnresolvedNameExpr(IdentifierInfo* II)
-        : Expr(ExprClass::UnknownName), Ident(II) {}
+    UnresolvedLookupExpr(IdentifierInfo* N, bool ADL, bool OL)
+        : Expr(ExprClass::UnknownName), Name(N), RequiresADL(ADL), Overloaded(OL) {}
 
     void print(std::ostream& os) const override;
 };

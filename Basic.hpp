@@ -1,55 +1,7 @@
 #pragma once
 #include <utility>
 #include <typeinfo>
-
-// Forward declarations
-
-//Preprocessor
-struct IdentifierInfo;
-struct IdentifierTable;
-
-//Lexer
-struct Token;
-class Decl;
-
-
-//AST
-
-// Types
-class Type;
-
-struct BuiltinType;
-struct ResolvedType;
-struct UnresolvedType;
-
-// Statements
-class Stmt;
-
-struct Expr;
-
-struct IntLiteralExpr;
-struct DoubleLiteralExpr;
-
-struct DeclRefExpr;
-struct UnresolvedNameExpr;
-
-struct PlusExpr;
-struct MultiplyExpr;
-
-//Declarations
-class Decl;
-
-struct NamedDecl;
-
-struct VarDecl;
-struct TypedefDecl;
-
-
-//Compilation phases
-class Preprocessor;
-class Lexer;
-class Parser;
-class Sema;
+#include "ForwardDeclarations.hpp"
 
 //static polymorphism helpers
 

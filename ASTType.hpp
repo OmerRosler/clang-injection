@@ -50,9 +50,10 @@ struct UnresolvedType : Type {
     IdentifierInfo* II;
     // Once resolved, this points to the actual Type (or nullptr if unresolved)
     Type* resolved = nullptr;
+    DeclContext* OwnerContext = nullptr; // TODO: Handle this properly
 
-    explicit UnresolvedType(IdentifierInfo* II)
-        : Type(TypeClass::Unresolved), II(II) {}
+    explicit UnresolvedType(IdentifierInfo* II, DeclContext* OwnerContext)
+        : Type(TypeClass::Unresolved), II(II), OwnerContext(OwnerContext) {}
 
     static bool classof(const Type* e) {
         return e->typeClass == TypeClass::Unresolved;

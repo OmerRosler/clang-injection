@@ -44,6 +44,12 @@ bool Lexer::LexPunctuation(char c, Token& Tok)
     case ')':
         Tok.Kind = TokenKind::r_paren;
         break;
+    case '{':
+        Tok.Kind = TokenKind::l_curly;
+        break;
+    case '}':
+        Tok.Kind = TokenKind::r_curly;
+        break;
     default:
         Tok.Kind = TokenKind::unknown;
         is_punctuation = false;
@@ -78,7 +84,7 @@ void Lexer::Lex(Token& Tok) {
         Tok.Kind = II->getTokenID();
         Tok.II = II;
         Tok.textPtr = start;
-        Tok.length = len;
+        Tok.length = unsigned(len);
         return;
     }
 
@@ -98,7 +104,7 @@ void Lexer::Lex(Token& Tok) {
         size_t len = BufferPtr - start;
         Tok.Kind = TokenKind::numeric_constant;
         Tok.textPtr = start;
-        Tok.length = len;
+        Tok.length = unsigned(len);
         Tok.II = nullptr;
         return;
     }

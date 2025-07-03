@@ -124,7 +124,8 @@
   <ItemGroup>
     <ClCompile Include="IdentifierInfo.cpp" />
     <ClCompile Include="IdentifierTable.cpp" />
-    <ClCompile Include="SemaActions.cpp" />
+    <ClCompile Include="Scope.cpp" />
+    <ClCompile Include="SemaLookup.cpp" />
     <ClCompile Include="ASTDecl.cpp" />
     <ClCompile Include="ASTDecl.hpp" />
     <ClCompile Include="ASTExpr.cpp" />
@@ -136,6 +137,8 @@
     <ClCompile Include="ParseExpr.cpp" />
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="ParseType.cpp" />
+    <ClCompile Include="SemaDecl.cpp" />
+    <ClCompile Include="SemaExpr.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ASTContext.hpp" />
@@ -143,11 +146,14 @@
     <ClInclude Include="ASTStmt.hpp" />
     <ClInclude Include="Basic.hpp" />
     <ClInclude Include="DeclContext.hpp" />
+    <ClInclude Include="ForwardDeclarations.hpp" />
     <ClInclude Include="IdentifierInfo.hpp" />
     <ClInclude Include="IdentifierTable.hpp" />
     <ClInclude Include="Lexer.hpp" />
+    <ClInclude Include="LookupResult.hpp" />
     <ClInclude Include="Parser.hpp" />
     <ClInclude Include="Preprocessor.hpp" />
+    <ClInclude Include="Scope.hpp" />
     <ClInclude Include="Sema.hpp" />
     <ClInclude Include="Token.hpp" />
   </ItemGroup>
