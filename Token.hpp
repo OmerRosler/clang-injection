@@ -13,8 +13,8 @@ enum class TokenKind {
     star,
     equal,
     semicolon,
-    l_paran,
-    r_paran,
+    l_paren,
+    r_paren,
 
     //keywords
     kw_int,

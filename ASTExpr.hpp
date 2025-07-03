@@ -5,7 +5,8 @@
 
 // === Base class for expressions ===
 struct Expr : Stmt {
-    enum class ExprClass { IntLiteral, DoubleLiteral, PlusExpr, MultiplyExpr, UnknownName
+    enum class ExprClass { IntLiteral, DoubleLiteral, PlusExpr, ParenExpr,
+        MultiplyExpr, UnknownName
     };
     ExprClass exprClass;
     explicit Expr(ExprClass ec) : Stmt(StmtClass::Expr), exprClass(ec) {}
@@ -17,6 +18,16 @@ struct Expr : Stmt {
 
     virtual void print(std::ostream& os) const = 0;
 
+};
+
+struct ParenExpr : Expr {
+    Expr* subExpr;
+    explicit ParenExpr(Expr* e) : Expr(ExprClass::ParenExpr), subExpr(e) {}
+    void print(std::ostream& os) const override {
+        os << "(";
+        if (subExpr) subExpr->print(os); else os << "<null>";
+        os << ")";
+    }
 };
 
 // === Concrete Expr nodes ===

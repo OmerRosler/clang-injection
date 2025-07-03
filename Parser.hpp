@@ -35,20 +35,18 @@ public:
         return -1;
     }
 
-
-    Expr* parsePrimaryExpr();
-    Expr* ParseLiteral();
-
     Expr* parseExpr();
 
+    Expr* parsePrimaryExpr();
+    Expr* parseLiteral();
     Expr* parseBinOpRHS(int exprPrec, Expr* lhs);
+    ParenExpr* parseParenExpr();
+
 
     Type* parseTypeName();
 
     TypedefDecl* parseTypedef();
-
     VarDecl* parseVarDecl();
-
     Decl* parseDeclaration();
 
 protected:

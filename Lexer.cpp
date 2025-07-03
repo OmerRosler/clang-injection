@@ -39,10 +39,10 @@ bool Lexer::LexPunctuation(char c, Token& Tok)
         Tok.Kind = TokenKind::semicolon;
         break;
     case '(':
-        Tok.Kind = TokenKind::l_paran;
+        Tok.Kind = TokenKind::l_paren;
         break;
     case ')':
-        Tok.Kind = TokenKind::r_paran;
+        Tok.Kind = TokenKind::r_paren;
         break;
     default:
         Tok.Kind = TokenKind::unknown;

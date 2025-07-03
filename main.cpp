@@ -14,7 +14,7 @@ int main() {
 
     Sema sema(ctx, &dc);
 
-    std::string expr_source_code = "int foo = 3; int x = 42+3.14*foo; typedef int A; A y;";
+    std::string expr_source_code = "int foo = 3; int x = (42+3.14)*foo; typedef int A; A y;";
     Preprocessor pp(expr_source_code); //lexer is created implictly for now
     Parser parser(pp, sema);
     std::array<Decl*, 4> decls_AST{};

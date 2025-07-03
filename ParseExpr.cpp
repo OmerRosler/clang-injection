@@ -1,7 +1,9 @@
 #include "Parser.hpp"
 #include "Sema.hpp"
 
-Expr* Parser::ParseLiteral() {
+#include <cassert>
+
+Expr* Parser::parseLiteral() {
     if (Tok.isNot(TokenKind::numeric_constant)) {
         // In real clang, error handling here
         return nullptr;
@@ -26,24 +28,34 @@ Expr* Parser::ParseLiteral() {
     return result;
 }
 
+ParenExpr* Parser::parseParenExpr() {
+    assert(Tok.is(TokenKind::l_paren) && "ParseParenExpr called without '('");
+    ConsumeToken(); // consume '('
+
+    Expr* SubExpr = parseExpr();
+    //TODO: Hanlde empty paranthesis
+    //if (!SubExpr) return nullptr;
+
+    if (!Tok.is(TokenKind::r_paren)) {
+        throw std::runtime_error("expected ')'");
+    }
+
+    ConsumeToken(); // consume ')'
+
+    return Actions.ActOnParenExpr(SubExpr);
+}
+
 Expr* Parser::parsePrimaryExpr() {
     if (Tok.is(TokenKind::numeric_constant)) {
-        return ParseLiteral();
+        return parseLiteral();
     }
     else if (Tok.is(TokenKind::identifier)) {
         IdentifierInfo* II = Tok.getIdentifierInfo();
         ConsumeToken();
         return Actions.ActOnIdentifier(II);
     }
-    else if (Tok.is(TokenKind::l_paran))
-    {
-        ConsumeToken(); // eat '('
-        Expr* SubExpr = parseExpr();
-        if (Tok.isNot(TokenKind::r_paran))
-            throw std::runtime_error("Expected ')'");
-        ConsumeToken(); // eat ')'
-        return SubExpr;
-    }
+    else if (Tok.is(TokenKind::l_paren))
+        return parseParenExpr();
     else {
         throw std::runtime_error("Unexpected token in primary expression");
     }

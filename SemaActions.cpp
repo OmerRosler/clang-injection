@@ -81,3 +81,8 @@ BuiltinType* Sema::ActOnBuiltinType(BuiltinType::BuiltinKind K) {
 UnresolvedType* Sema::ActOnUnresolvedType(IdentifierInfo* II) {
     return Context.create<UnresolvedType>(II);
 }
+
+ParenExpr* Sema::ActOnParenExpr(Expr* SubExpr)
+{
+    return Context.create<ParenExpr>(SubExpr);
+}

@@ -69,14 +69,16 @@ public:
     TypedefDecl* ActOnTypedefDecl(Type* type, IdentifierInfo* id, DeclContext* DC);
 
     PlusExpr* ActOnPlusExpr(Expr* lhs, Expr* rhs);
-
     MultiplyExpr* ActOnMultiplyExpr(Expr* lhs, Expr* rhs);
 
     IntLiteralExpr* ActOnIntLiteral(int value);
-
     DoubleLiteralExpr* ActOnDoubleLiteral(double value);
 
-    BuiltinType* ActOnBuiltinType(BuiltinType::BuiltinKind);
+    ParenExpr* ActOnParenExpr(Expr* SubExpr);
 
+
+
+
+    BuiltinType* ActOnBuiltinType(BuiltinType::BuiltinKind);
     UnresolvedType* ActOnUnresolvedType(IdentifierInfo* II);
 };
