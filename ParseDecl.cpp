@@ -2,19 +2,36 @@
 #include "Sema.hpp"
 #include "Preprocessor.hpp"
 
-// Entry point
-Decl* Parser::parseDeclaration() {
-    //if (Tok.Kind == TokenKind::Identifier && Tok.Text == "typedef") {
-    //    return ParseTypedef();
-    //}
-
-    //// Otherwise, parse type first
-    //Type* Ty = Actions.getTypeName(*this);
-    //if (!Ty) return nullptr;
-
-    //return ParseSingleDeclAfterType(Ty);
-    return nullptr;
+void Parser::parseTopLevelDecl() {
+    while (Tok.isNot(TokenKind::eof)) {
+        parseDeclaration();
+    }
 }
+
+Decl* Parser::parseDeclaration() {
+    //dispatch all known declarations
+    // all of these are complete declarations (for now) so they consume the semi-colon
+    if (Tok.is(TokenKind::kw_typedef)) {
+        return parseTypedef();
+    }
+    else
+    {
+        return parseVarDecl();
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

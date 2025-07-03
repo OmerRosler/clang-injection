@@ -72,4 +72,6 @@ public:
         if (Result == LookupResultKind::NotFound) std::cerr << "error: name not found\n";
         else if (Result == LookupResultKind::Ambiguous) std::cerr << "error: ambiguous name\n";
     }
+
+    [[nodiscard]] bool empty() const { return Decls.empty(); }
 };

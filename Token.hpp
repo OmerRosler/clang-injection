@@ -14,8 +14,8 @@ enum class TokenKind {
     semicolon,
     l_paren,
     r_paren,
-    l_curly,
-    r_curly,
+    l_brace,
+    r_brace,
 
     //keywords
     kw_int,
@@ -68,6 +68,9 @@ public:
     unsigned getLength() const {
         return length;
     }
+
+    //only usable for Preprocessed tokens
+    bool isKeyword() const;
 
     void setAnnotationValue(void* V) { AnnotationValue = V; }
     void* getAnnotationValue() const { return AnnotationValue; }

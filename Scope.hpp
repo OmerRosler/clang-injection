@@ -1,26 +1,25 @@
 #pragma once
 #include <vector>
+#include <unordered_map>
+
 #include "Basic.hpp"
-
+enum class ScopeFlags {
+    DeclScope = 0x01,
+    FunctionScope = 0x02,
+    BlockScope = 0x04,
+    // ... other flags
+};
 class Scope {
-public:
-    enum class ScopeFlags {
-        DeclScope = 0x01,
-        FunctionScope = 0x02,
-        BlockScope = 0x04,
-        // ... other flags
-    };
-
 private:
-    Scope* Parent = nullptr;
-    unsigned Flags = 0;
-    std::vector<NamedDecl*> DeclsInScope = {};
+    Scope* Parent;
+    unsigned Flags;
+    std::unordered_map<IdentifierInfo*, NamedDecl*> DeclsInScope;
 
 public:
     Scope(Scope* parent, unsigned flags)
         : Parent(parent), Flags(flags) {}
 
-    void AddDecl(NamedDecl* D) { DeclsInScope.push_back(D); }
+    void AddDecl(IdentifierInfo* II, NamedDecl* D) { DeclsInScope[II] = D; }
 
     NamedDecl* lookup(IdentifierInfo* II) const;
 

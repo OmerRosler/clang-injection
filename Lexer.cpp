@@ -45,10 +45,10 @@ bool Lexer::LexPunctuation(char c, Token& Tok)
         Tok.Kind = TokenKind::r_paren;
         break;
     case '{':
-        Tok.Kind = TokenKind::l_curly;
+        Tok.Kind = TokenKind::l_brace;
         break;
     case '}':
-        Tok.Kind = TokenKind::r_curly;
+        Tok.Kind = TokenKind::r_brace;
         break;
     default:
         Tok.Kind = TokenKind::unknown;

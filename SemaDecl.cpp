@@ -9,7 +9,7 @@ VarDecl* Sema::ActOnVarDecl(Scope* S, DeclContext* DC,
     DC->addDecl(VD);
 
     // Register in Scope
-    S->AddDecl(VD);
+    S->AddDecl(II, VD);
 
     return VD;
 }
@@ -20,6 +20,6 @@ TypedefDecl* Sema::ActOnTypedefDecl(Scope* S, DeclContext* DC,
     TypedefDecl* TD = Context.create<TypedefDecl>(II, Ty);
 
     DC->addDecl(TD);
-    S->AddDecl(TD);
+    S->AddDecl(II, TD);
     return TD;
 }

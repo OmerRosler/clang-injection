@@ -9,6 +9,7 @@ class Parser {
 private:
 
     void ConsumeToken();
+    void ExpectAndConsume(TokenKind Expected);
 
     IdentifierInfo* getIdentifier() const {
         return Tok.getIdentifierInfo(); // assumes Token has it
@@ -20,6 +21,16 @@ private:
 
     unsigned getLiteralLength() const {
         return Tok.getLength(); // used for parsing numbers
+    }
+
+
+    bool isDeclarationStatement()
+    {
+        //TODO: This is a hack! needs to change significantly
+        if (Tok.isKeyword())
+            return true;
+        // won't work for A x = 3; where A is known typename
+        return false;
     }
 
 public:
@@ -47,7 +58,15 @@ public:
 
     TypedefDecl* parseTypedef();
     VarDecl* parseVarDecl();
+    
     Decl* parseDeclaration();
+
+    void parseTopLevelDecl();
+
+
+    CompoundStmt* parseCompoundStatement();
+    Stmt* parseStatement();
+    Stmt* parseDeclarationOrStatement(Scope* S);
 
 protected:
     Preprocessor& PP;

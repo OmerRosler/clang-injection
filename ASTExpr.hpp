@@ -23,6 +23,11 @@ struct Expr : Stmt {
 struct ParenExpr : Expr {
     Expr* subExpr;
     explicit ParenExpr(Expr* e) : Expr(ExprClass::ParenExpr), subExpr(e) {}
+
+
+    static bool classof(const Expr* e) {
+        return e->exprClass == ExprClass::ParenExpr;
+    }
     void print(std::ostream& os) const override {
         os << "(";
         if (subExpr) subExpr->print(os); else os << "<null>";

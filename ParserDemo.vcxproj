@@ -122,8 +122,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ASTStmt.cpp" />
     <ClCompile Include="IdentifierInfo.cpp" />
     <ClCompile Include="IdentifierTable.cpp" />
+    <ClCompile Include="ParseScope.cpp" />
+    <ClCompile Include="ParseStmt.cpp" />
     <ClCompile Include="Scope.cpp" />
     <ClCompile Include="SemaLookup.cpp" />
     <ClCompile Include="ASTDecl.cpp" />
@@ -139,6 +142,9 @@
     <ClCompile Include="ParseType.cpp" />
     <ClCompile Include="SemaDecl.cpp" />
     <ClCompile Include="SemaExpr.cpp" />
+    <ClCompile Include="SemaStmt.cpp" />
+    <ClCompile Include="SemaType.cpp" />
+    <ClCompile Include="Token.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ASTContext.hpp" />
