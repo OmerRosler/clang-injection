@@ -144,6 +144,10 @@
     <ClCompile Include="SemaExpr.cpp" />
     <ClCompile Include="SemaStmt.cpp" />
     <ClCompile Include="SemaType.cpp" />
+    <ClCompile Include="test_files\compound_block.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Token.cpp" />
   </ItemGroup>
   <ItemGroup>

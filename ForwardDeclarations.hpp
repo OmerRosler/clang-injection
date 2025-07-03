@@ -23,8 +23,7 @@ class Scope;
 // Sema
 class Sema;
 
-
-struct LookupResult;
+class LookupResult;
 
 //AST
 
