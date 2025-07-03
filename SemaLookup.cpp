@@ -64,6 +64,7 @@ bool Sema::LookupADL(LookupResult& R, Scope* S) {
 Expr* Sema::ActOnIdentifierExpr(Scope* S, DeclContext* OwnerContext, IdentifierInfo* II) {
     // Unqualified Lookup in Scope
     LookupResult Res(*this, II, LookupNameKind::LookupOrdinaryName);
+    LookupName(Res, S);
     if (!Res.isSingleResult()) {
         return Context.create<UnresolvedLookupExpr>(II, false, false);
     }
