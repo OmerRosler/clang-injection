@@ -105,9 +105,8 @@ struct MultiplyExpr : Expr {
 
 struct DeclRefExpr : Expr {
     NamedDecl* decl;   // pointer to resolved declaration
-    DeclContext* OwnerCtx = nullptr; // TODO: Handle this properly
-    explicit DeclRefExpr(NamedDecl* d, DeclContext*  OwnerCtx = nullptr) : 
-        Expr(ExprClass::UnknownName), decl(d), OwnerCtx(OwnerCtx) {}
+    explicit DeclRefExpr(NamedDecl* d) : 
+        Expr(ExprClass::UnknownName), decl(d) {}
     void print(std::ostream& os) const override;
 };
 

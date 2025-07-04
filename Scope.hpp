@@ -1,27 +1,40 @@
 #pragma once
 #include <vector>
 #include <unordered_map>
+#include <ranges>
 
 #include "Basic.hpp"
 enum class ScopeFlags {
-    DeclScope = 0x01,
-    FunctionScope = 0x02,
-    BlockScope = 0x04,
-    // ... other flags
+    FunctionScope = 1 << 0,
+    CompoundScope = 1 << 1,
+    NamespaceScope = 1 << 2,
+    ClassScope = 1 << 3,
 };
 class Scope {
 private:
     Scope* Parent;
     unsigned Flags;
-    std::unordered_map<IdentifierInfo*, NamedDecl*> DeclsInScope;
+    DeclContext* Entity; //owner of the scope if exists
+    using decl_storage = std::vector<Decl*>;
+    decl_storage DeclsInScope;
+
 
 public:
-    Scope(Scope* parent, unsigned flags)
-        : Parent(parent), Flags(flags) {}
 
-    void AddDecl(IdentifierInfo* II, NamedDecl* D) { DeclsInScope[II] = D; }
+    using decl_range = decltype(std::views::reverse(std::declval<const decl_storage&>()));
 
-    NamedDecl* lookup(IdentifierInfo* II) const;
+    Scope(Scope* Parent, unsigned Flags)
+        : Parent(Parent), Entity(nullptr), Flags(Flags) {}
+
+    void setEntity(DeclContext* DC) { Entity = DC; }
+    DeclContext* getEntity() const { return Entity; }
 
     Scope* getParent() const { return Parent; }
+
+    void AddDecl(Decl* D) { if (D) DeclsInScope.push_back(D); }
+    Decl* lookupLocal(IdentifierInfo* II) const;
+
+    decl_range decls() const { return std::views::reverse(DeclsInScope); }
+
+
 };

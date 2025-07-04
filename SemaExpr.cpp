@@ -1,4 +1,7 @@
 #include "Sema.hpp"
+#include "LookupResult.hpp"
+#include "Scope.hpp"
+#include "ASTDecl.hpp"
 
 PlusExpr* Sema::ActOnPlusExpr(Expr* lhs, Expr* rhs) {
     // Perform semantic checks (omitted here)
@@ -29,3 +32,22 @@ ParenExpr* Sema::ActOnParenExpr(Expr* SubExpr)
 {
     return Context.create<ParenExpr>(SubExpr);
 }
+
+
+
+Expr* Sema::ActOnIdentifierExpr(Scope* S, DeclContext* OwnerContext, IdentifierInfo* II) {
+    // Unqualified Lookup in Scope
+    LookupResult Res(*this, II, LookupNameKind::LookupOrdinaryName);
+    LookupName(Res, S);
+    if (!Res.isSingleResult()) {
+        return Context.create<UnresolvedLookupExpr>(II, false, false);
+    }
+
+    NamedDecl* ND = Res.getFoundDecl();
+    if (!isa<VarDecl>(ND))
+    {
+        throw std::runtime_error("Expected Identifier of Variable");
+    }
+    return Context.create<DeclRefExpr>(ND);
+}
+

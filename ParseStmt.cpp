@@ -21,15 +21,13 @@ Stmt* Parser::parseDeclarationOrStatement(Scope* S) {
         Decl* decl = parseDeclaration();
         return Actions.ActOnDeclStmt(decl);
     }
-    else if(Tok.is(TokenKind::identifier)) {
+    else if (Tok.is(TokenKind::identifier)) {
         IdentifierInfo* II = Tok.getIdentifierInfo();
         if (Actions.isTypeName(II, S)) {
             return Actions.ActOnDeclStmt(parseDeclaration());
         }
     }
-    else {
-        return parseStatement();
-    }
+    return parseStatement();
 }
 
 CompoundStmt* Parser::parseCompoundStatement() {
@@ -41,7 +39,7 @@ CompoundStmt* Parser::parseCompoundStatement() {
 	// 
 	//auto CurScopeFlags = CurrentScope->getFlags();
 	//CurScopeFlags |= ScopeFlags::BlockScope;
-	unsigned new_scope_flags = static_cast<unsigned>(ScopeFlags::BlockScope);
+	unsigned new_scope_flags = static_cast<unsigned>(ScopeFlags::CompoundScope);
     // Enter a new block scope
 	Scope CompoundScope(CurrentScope, new_scope_flags);
 	CurrentScope = &CompoundScope;

@@ -1,12 +1,18 @@
 #include "Scope.hpp"
 #include "Parser.hpp"
 #include "ASTDecl.hpp"
+#include <ranges>
 
-NamedDecl* Scope::lookup(IdentifierInfo* II) const {
-    auto find_result = DeclsInScope.find(II);
-    if (find_result != DeclsInScope.end())
+Decl* Scope::lookupLocal(IdentifierInfo* II) const {
+    for (Decl* D : decls())
     {
-        return find_result->second;
+        if (auto* ND = dyn_cast<NamedDecl>(D))
+        {
+            if (ND->getIdentifier() == II)
+            {
+                return D;
+            }
+        }
     }
     return nullptr;
 }

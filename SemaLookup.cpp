@@ -1,37 +1,60 @@
 #include "Sema.hpp"
 #include "LookupResult.hpp"
 #include "Scope.hpp"
+#include "ASTDecl.hpp"
 
 // === Main public API ===
 bool Sema::LookupName(LookupResult& R, Scope* S, bool AllowBuiltinCreation) {
     if (R.getLookupKind() == LookupNameKind::LookupADL)
         return LookupADL(R, S);
 
+    IdentifierInfo* Name = R.getLookupName();
     // Try scope-based lookup
-    for (; S; S = S->getParent()) {
-        NamedDecl* D = S->lookup(R.getLookupName());
-        if (D) {
-            R.addDecl(D);
-            return true;
+    for (Scope* Cur = S; Cur; Cur = Cur->getParent()) {
+        //look at locals
+        for (Decl* D : Cur->decls())
+        {
+            auto* ND = dyn_cast<NamedDecl>(D);
+            if (ND->getIdentifier() == Name)
+            {
+                //found non function, it hides all, we stop everything
+                if (!isa<FunctionDecl>(ND))
+                {
+                    // if already found functions, remove them
+                    //TODO: If R is not empty here, there is an error, we report it when we add diagnostics
+                    R.clear();
+                    R.addDecl(ND);
+                    return true;
+                }
+                R.addDecl(ND);
+            }
         }
-    }
+        if (!R.empty())
+        {
+            //found overload set in this scope, it hides the DeclContext so we break
+            break;
+        }
 
-    // Fallback to DeclContext
-    if (CurrentDeclContext) {
-        NamedDecl* D = CurrentDeclContext->lookup(R.getLookupName());
-        if (D) {
-            R.addDecl(D);
-            return true;
+        //lookup at the entity associated with the scope if exists (say other members of a class)
+        if (DeclContext* DC = Cur->getEntity()) {
+            //add results from semantic owner of the scope
+            DC->lookup(Name, R);
+            if (!R.empty())
+            {
+                //found in DC, hides all else
+                break;
+            }
         }
     }
 
     // No match found
-    return false;
+    return !R.empty();
 }
 
 // === Lookup in a specific DeclContext ===
 bool Sema::LookupQualifiedName(LookupResult& R, DeclContext* DC) {
-    NamedDecl* D = DC->lookup(R.getLookupName());
+    DC->lookup(R.getLookupName(), R);
+    NamedDecl* D = R.getFoundDecl();
     if (D) {
         R.addDecl(D);
         return true;
@@ -60,35 +83,3 @@ bool Sema::LookupADL(LookupResult& R, Scope* S) {
     return LookupName(R, S);
 }
 
-
-Expr* Sema::ActOnIdentifierExpr(Scope* S, DeclContext* OwnerContext, IdentifierInfo* II) {
-    // Unqualified Lookup in Scope
-    LookupResult Res(*this, II, LookupNameKind::LookupOrdinaryName);
-    LookupName(Res, S);
-    if (!Res.isSingleResult()) {
-        return Context.create<UnresolvedLookupExpr>(II, false, false);
-    }
-
-    NamedDecl* ND = Res.getFoundDecl();
-    if (!isa<VarDecl>(ND))
-    {
-        throw std::runtime_error("Expected Identifier of Variable");
-    }
-    return Context.create<DeclRefExpr>(ND, OwnerContext);
-}
-
-
-Type* Sema::ActOnIdentifierType(Scope* S, DeclContext* OwnerContext, IdentifierInfo* II) {
-    // Lookup in Scope
-    LookupResult Res(*this, II);
-    bool found = LookupName(Res, S);
-    auto* ND = Res.getFoundDecl();
-    if (found) {
-        // For simplicity, assume it's always a TypedefDecl
-        if (auto* TD = dyn_cast<TypedefDecl>(ND)) {
-            return Context.getTypeDeclType(TD); // returns TypedefType*
-        }
-    }
-
-    return Context.create<UnresolvedType>(II, OwnerContext);
-}

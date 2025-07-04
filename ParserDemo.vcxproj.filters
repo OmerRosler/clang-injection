@@ -96,6 +96,27 @@
     <ClCompile Include="Scope.cpp">
       <Filter>Source Files\Parser</Filter>
     </ClCompile>
+    <ClCompile Include="test_files\compound_block.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ParseStmt.cpp">
+      <Filter>Source Files\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="ASTStmt.cpp">
+      <Filter>Source Files\AST</Filter>
+    </ClCompile>
+    <ClCompile Include="DeclContext.cpp">
+      <Filter>Source Files\AST</Filter>
+    </ClCompile>
+    <ClCompile Include="SemaStmt.cpp">
+      <Filter>Source Files\Sema</Filter>
+    </ClCompile>
+    <ClCompile Include="SemaType.cpp">
+      <Filter>Source Files\Sema</Filter>
+    </ClCompile>
+    <ClCompile Include="Token.cpp">
+      <Filter>Source Files\Lexer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Basic.hpp">
@@ -122,9 +143,6 @@
     <ClInclude Include="Token.hpp">
       <Filter>Header Files\Lexer</Filter>
     </ClInclude>
-    <ClInclude Include="DeclContext.hpp">
-      <Filter>Header Files\Sema</Filter>
-    </ClInclude>
     <ClInclude Include="Preprocessor.hpp">
       <Filter>Header Files\Preprocessor</Filter>
     </ClInclude>
@@ -134,13 +152,16 @@
     <ClInclude Include="IdentifierInfo.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Scope.hpp">
-      <Filter>Header Files\Parser</Filter>
-    </ClInclude>
     <ClInclude Include="ForwardDeclarations.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LookupResult.hpp">
+      <Filter>Header Files\Sema</Filter>
+    </ClInclude>
+    <ClInclude Include="DeclContext.hpp">
+      <Filter>Header Files\AST</Filter>
+    </ClInclude>
+    <ClInclude Include="Scope.hpp">
       <Filter>Header Files\Sema</Filter>
     </ClInclude>
   </ItemGroup>

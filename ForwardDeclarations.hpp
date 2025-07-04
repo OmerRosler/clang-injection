@@ -56,4 +56,5 @@ class DeclContext;
 
 struct VarDecl;
 struct TypedefDecl;
+struct FunctionDecl;
 

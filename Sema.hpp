@@ -23,12 +23,6 @@ class Sema {
     // === Symbol Tables ===
     DeclContext* CurrentDeclContext;         // E.g. current function, class, etc.
 
-
-    // Lookup name in current DeclContext
-    NamedDecl* lookupName(IdentifierInfo* II) {
-        return CurrentDeclContext->lookup(II);
-    }
-
     bool LookupADL(LookupResult& R, Scope* S);
 
 public:
@@ -41,6 +35,7 @@ public:
 
     // lookup
     NamedDecl* LookupSingleName(DeclContext* DC, IdentifierInfo* II);
+    //unqualified name lookup (no ADL)
     bool LookupName(LookupResult& R, Scope* S, bool AllowBuiltinCreation = false);
     bool LookupQualifiedName(LookupResult& R, DeclContext* DC);
     bool LookupParsedName(LookupResult& R, Scope* S, /* CXXScopeSpec* SS stubbed */ void* = nullptr);

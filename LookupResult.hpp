@@ -5,6 +5,7 @@
 enum class LookupResultKind {
     NotFound,
     Found,
+    FoundOverloaded,
     Ambiguous  // We'll skip implementing ambiguity handling for now
 };
 
@@ -49,9 +50,14 @@ public:
             Result = LookupResultKind::Found;
         }
         else { 
-            Result = LookupResultKind::Ambiguous;
+            Result = LookupResultKind::FoundOverloaded;
         } // Simplified ambiguity detection
         Decls.push_back(D);
+    }
+    void clear()
+    {
+        Decls.clear();
+        Result = LookupResultKind::NotFound;
     }
 
     LookupResultKind getResultKind() const { return Result; }
@@ -65,13 +71,14 @@ public:
     bool isAmbiguous() const { return (Result == LookupResultKind::Ambiguous); }
     bool isFound() const { return (Result == LookupResultKind::Found); }
     bool isNotFound() const { return (Result == LookupResultKind::NotFound); }
+    bool isOverloaded() const { return (Result == LookupResultKind::FoundOverloaded); }
 
     bool isSingleResult() const { return (Decls.size() == 1); }
 
-    void printDiagnostics() const {
+    /*void printDiagnostics() const {
         if (Result == LookupResultKind::NotFound) std::cerr << "error: name not found\n";
         else if (Result == LookupResultKind::Ambiguous) std::cerr << "error: ambiguous name\n";
-    }
+    }*/
 
     [[nodiscard]] bool empty() const { return Decls.empty(); }
 };

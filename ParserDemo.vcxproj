@@ -123,9 +123,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ASTStmt.cpp" />
+    <ClCompile Include="DeclContext.cpp" />
     <ClCompile Include="IdentifierInfo.cpp" />
     <ClCompile Include="IdentifierTable.cpp" />
-    <ClCompile Include="ParseScope.cpp" />
     <ClCompile Include="ParseStmt.cpp" />
     <ClCompile Include="Scope.cpp" />
     <ClCompile Include="SemaLookup.cpp" />

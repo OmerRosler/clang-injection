@@ -1,6 +1,7 @@
 #include "Parser.hpp"
 #include "Sema.hpp"
 #include "Preprocessor.hpp"
+#include "ASTDecl.hpp"
 
 void Parser::parseTopLevelDecl() {
     while (Tok.isNot(TokenKind::eof)) {
