@@ -3,11 +3,12 @@
 #include "Scope.hpp"
 #include "ASTDecl.hpp"
 
-// === Main public API ===
+// hiding is hard
 bool Sema::LookupName(LookupResult& R, Scope* S, bool AllowBuiltinCreation) {
     if (R.getLookupKind() == LookupNameKind::LookupADL)
         return LookupADL(R, S);
 
+    //TODO: See bug #12. The logic is wrong, we won't fix it here
     IdentifierInfo* Name = R.getLookupName();
     // Try scope-based lookup
     for (Scope* Cur = S; Cur; Cur = Cur->getParent()) {
@@ -38,7 +39,7 @@ bool Sema::LookupName(LookupResult& R, Scope* S, bool AllowBuiltinCreation) {
         //lookup at the entity associated with the scope if exists (say other members of a class)
         if (DeclContext* DC = Cur->getEntity()) {
             //add results from semantic owner of the scope
-            DC->lookup(Name, R);
+            DC->lookupDirectMember(Name,R);
             if (!R.empty())
             {
                 //found in DC, hides all else
@@ -53,13 +54,8 @@ bool Sema::LookupName(LookupResult& R, Scope* S, bool AllowBuiltinCreation) {
 
 // === Lookup in a specific DeclContext ===
 bool Sema::LookupQualifiedName(LookupResult& R, DeclContext* DC) {
-    DC->lookup(R.getLookupName(), R);
-    NamedDecl* D = R.getFoundDecl();
-    if (D) {
-        R.addDecl(D);
-        return true;
-    }
-    return false;
+    //TODO: Fix this when we get to qualified lookup
+    return DC->lookupDirectMember(R.getLookupName(), R);
 }
 
 // === Lookup a possibly qualified name (e.g. A::x)

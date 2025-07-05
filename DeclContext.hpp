@@ -10,14 +10,20 @@ class DeclContext {
 
     DeclList Decls;
     LookupMap Lookup;
+    DeclContext* ParentDC = nullptr; // Semantic parent
+
 
 public:
+    using lookup_data_type = std::vector<NamedDecl*>;
     DeclContext() = default;
 
     // Add a declaration into this context
-    void addDecl(NamedDecl* D);
+    bool addDecl(NamedDecl* NewDecl);
 
-    void lookup(IdentifierInfo* II, LookupResult& R) const;
+    bool lookupDirectMember(IdentifierInfo* II, LookupResult& R) const;
+    NamedDecl* lookupFirstDirectMember(IdentifierInfo* II) const;
+    lookup_data_type lookupDirectMember(IdentifierInfo* II) const;
+
 
     // Iterator over all declarations in this context
     auto decls_begin() const { return Decls.begin(); }

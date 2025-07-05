@@ -18,6 +18,8 @@ private:
     using decl_storage = std::vector<Decl*>;
     decl_storage DeclsInScope;
 
+    using lookup_result = std::vector <NamedDecl*>;
+
 
 public:
 
@@ -31,8 +33,9 @@ public:
 
     Scope* getParent() const { return Parent; }
 
-    void AddDecl(Decl* D) { if (D) DeclsInScope.push_back(D); }
-    Decl* lookupLocal(IdentifierInfo* II) const;
+    bool addDecl(NamedDecl* NewDecl);
+    lookup_result lookupLocal(IdentifierInfo* II) const;
+    NamedDecl* lookupFirstLocal(IdentifierInfo* II) const;
 
     decl_range decls() const { return std::views::reverse(DeclsInScope); }
 

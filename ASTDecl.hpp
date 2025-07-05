@@ -11,6 +11,7 @@ public:
         Var,
         Typedef,
         Function,
+        Namespace,
         // ... other decl kinds can go here
     };
 
@@ -27,20 +28,29 @@ public:
 
     // Static polymorphism helpers:
     static bool classof(const Decl* D) { return true; } // base class matches all
+
+    bool isVarDecl() const { return K == Kind::Var; }
+    bool isFunctionDecl() const { return K == Kind::Function; }
+    bool isTypedefDecl() const { return K == Kind::Typedef; }
+    bool isNamespaceDecl() const { return K == Kind::Namespace; }
 };
 
 // NamedDecl derives from Decl, adds a name
 struct NamedDecl : public Decl {
     IdentifierInfo* Id;
 
-    NamedDecl(Kind k, IdentifierInfo* id) : Decl(k), Id(id) {}
+    DeclContext* OwningDC = nullptr;
 
-    IdentifierInfo* getIdentifier() const { return Id; }
-    const std::string& getName() const { return Id->getName(); }
+    NamedDecl(Kind k, IdentifierInfo* id) : Decl(k), Id(id) {}
 
     static bool classof(const Decl* D) {
         return D->getKind() == Kind::Var || D->getKind() == Kind::Typedef;
     }
+    IdentifierInfo* getIdentifier() const { return Id; }
+    const std::string& getName() const { return Id->getName(); }
+
+    DeclContext* getOwningDeclContext() const { return OwningDC; }
+
 };
 
 // VarDecl class
@@ -85,6 +95,18 @@ struct FunctionDecl : public NamedDecl, public DeclContext
 
     static bool classof(const Decl* D) {
         return D->getKind() == Kind::Function;
+    }
+
+};
+
+struct NamespaceDecl : public NamedDecl, public DeclContext
+{
+    //TODO
+    NamespaceDecl(IdentifierInfo* id)
+        : NamedDecl(Kind::Namespace, id) {}
+
+    static bool classof(const Decl* D) {
+        return D->getKind() == Kind::Namespace;
     }
 
 };
