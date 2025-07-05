@@ -7,8 +7,8 @@
 #include <string_view>
 #include <fstream>
 #include <sstream>
-#include "Parser.hpp"
-#include "Sema.hpp"
+#include "Parser/Parser.hpp"
+#include "Sema/Sema.hpp"
 // === Example Usage ===
 std::string file_to_string(const char* path)
 {

@@ -48,121 +48,124 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ASTType.hpp">
-      <Filter>Header Files\AST</Filter>
-    </ClCompile>
-    <ClCompile Include="ParseExpr.cpp">
-      <Filter>Source Files\Parser</Filter>
-    </ClCompile>
-    <ClCompile Include="ParseType.cpp">
-      <Filter>Source Files\Parser</Filter>
-    </ClCompile>
-    <ClCompile Include="Lexer.cpp">
-      <Filter>Source Files\Lexer</Filter>
-    </ClCompile>
-    <ClCompile Include="Parser.cpp">
-      <Filter>Source Files\Parser</Filter>
-    </ClCompile>
-    <ClCompile Include="ASTDecl.hpp">
-      <Filter>Header Files\AST</Filter>
-    </ClCompile>
-    <ClCompile Include="ASTExpr.cpp">
-      <Filter>Source Files\AST</Filter>
-    </ClCompile>
-    <ClCompile Include="ASTDecl.cpp">
-      <Filter>Source Files\AST</Filter>
-    </ClCompile>
-    <ClCompile Include="ASTType.cpp">
-      <Filter>Source Files\AST</Filter>
-    </ClCompile>
-    <ClCompile Include="ParseDecl.cpp">
-      <Filter>Source Files\Parser</Filter>
-    </ClCompile>
-    <ClCompile Include="SemaLookup.cpp">
-      <Filter>Source Files\Sema</Filter>
-    </ClCompile>
-    <ClCompile Include="IdentifierTable.cpp">
-      <Filter>Source Files\Preprocessor</Filter>
-    </ClCompile>
-    <ClCompile Include="IdentifierInfo.cpp">
-      <Filter>Source Files\Preprocessor</Filter>
-    </ClCompile>
-    <ClCompile Include="SemaExpr.cpp">
-      <Filter>Source Files\Sema</Filter>
-    </ClCompile>
-    <ClCompile Include="SemaDecl.cpp">
-      <Filter>Source Files\Sema</Filter>
-    </ClCompile>
-    <ClCompile Include="Scope.cpp">
-      <Filter>Source Files\Parser</Filter>
-    </ClCompile>
     <ClCompile Include="test_files\compound_block.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ParseStmt.cpp">
+    <ClCompile Include="lib\AST\ASTDecl.cpp">
+      <Filter>Source Files\AST</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\AST\ASTExpr.cpp">
+      <Filter>Source Files\AST</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\AST\ASTStmt.cpp">
+      <Filter>Source Files\AST</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\AST\ASTType.cpp">
+      <Filter>Source Files\AST</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\AST\DeclContext.cpp">
+      <Filter>Source Files\AST</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\Lexer\IdentifierInfo.cpp">
+      <Filter>Source Files\Lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\Lexer\Lexer.cpp">
+      <Filter>Source Files\Lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\Lexer\Token.cpp">
+      <Filter>Source Files\Lexer</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\Parser\ParseDecl.cpp">
       <Filter>Source Files\Parser</Filter>
     </ClCompile>
-    <ClCompile Include="ASTStmt.cpp">
-      <Filter>Source Files\AST</Filter>
+    <ClCompile Include="lib\Parser\ParseExpr.cpp">
+      <Filter>Source Files\Parser</Filter>
     </ClCompile>
-    <ClCompile Include="DeclContext.cpp">
-      <Filter>Source Files\AST</Filter>
+    <ClCompile Include="lib\Parser\Parser.cpp">
+      <Filter>Source Files\Parser</Filter>
     </ClCompile>
-    <ClCompile Include="SemaStmt.cpp">
+    <ClCompile Include="lib\Parser\ParseStmt.cpp">
+      <Filter>Source Files\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\Parser\ParseType.cpp">
+      <Filter>Source Files\Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\Preprocessor\IdentifierTable.cpp">
+      <Filter>Source Files\Preprocessor</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\Sema\Scope.cpp">
       <Filter>Source Files\Sema</Filter>
     </ClCompile>
-    <ClCompile Include="SemaType.cpp">
+    <ClCompile Include="lib\Sema\SemaDecl.cpp">
       <Filter>Source Files\Sema</Filter>
     </ClCompile>
-    <ClCompile Include="Token.cpp">
-      <Filter>Source Files\Lexer</Filter>
+    <ClCompile Include="lib\Sema\SemaExpr.cpp">
+      <Filter>Source Files\Sema</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\Sema\SemaLookup.cpp">
+      <Filter>Source Files\Sema</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\Sema\SemaStmt.cpp">
+      <Filter>Source Files\Sema</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\Sema\SemaType.cpp">
+      <Filter>Source Files\Sema</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Basic.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ASTExpr.hpp">
+    <ClInclude Include="include\AST\ASTBases.hpp">
       <Filter>Header Files\AST</Filter>
     </ClInclude>
-    <ClInclude Include="ASTStmt.hpp">
+    <ClInclude Include="include\AST\ASTContext.hpp">
       <Filter>Header Files\AST</Filter>
     </ClInclude>
-    <ClInclude Include="Parser.hpp">
+    <ClInclude Include="include\AST\ASTDecl.hpp">
+      <Filter>Header Files\AST</Filter>
+    </ClInclude>
+    <ClInclude Include="include\AST\ASTExpr.hpp">
+      <Filter>Header Files\AST</Filter>
+    </ClInclude>
+    <ClInclude Include="include\AST\ASTStmt.hpp">
+      <Filter>Header Files\AST</Filter>
+    </ClInclude>
+    <ClInclude Include="include\AST\ASTType.hpp">
+      <Filter>Header Files\AST</Filter>
+    </ClInclude>
+    <ClInclude Include="include\AST\DeclContext.hpp">
+      <Filter>Header Files\AST</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Lexer\IdentifierInfo.hpp">
+      <Filter>Header Files\Lexer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Lexer\Lexer.hpp">
+      <Filter>Header Files\Lexer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Lexer\Token.hpp">
+      <Filter>Header Files\Lexer</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Parser\Parser.hpp">
       <Filter>Header Files\Parser</Filter>
     </ClInclude>
-    <ClInclude Include="Sema.hpp">
-      <Filter>Header Files\Sema</Filter>
-    </ClInclude>
-    <ClInclude Include="ASTContext.hpp">
-      <Filter>Header Files\Sema</Filter>
-    </ClInclude>
-    <ClInclude Include="Lexer.hpp">
-      <Filter>Header Files\Lexer</Filter>
-    </ClInclude>
-    <ClInclude Include="Token.hpp">
-      <Filter>Header Files\Lexer</Filter>
-    </ClInclude>
-    <ClInclude Include="Preprocessor.hpp">
+    <ClInclude Include="include\Preprocessor\IdentifierTable.hpp">
       <Filter>Header Files\Preprocessor</Filter>
     </ClInclude>
-    <ClInclude Include="IdentifierTable.hpp">
+    <ClInclude Include="include\Preprocessor\Preprocessor.hpp">
       <Filter>Header Files\Preprocessor</Filter>
     </ClInclude>
-    <ClInclude Include="IdentifierInfo.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ForwardDeclarations.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LookupResult.hpp">
+    <ClInclude Include="include\Sema\LookupResult.hpp">
       <Filter>Header Files\Sema</Filter>
     </ClInclude>
-    <ClInclude Include="DeclContext.hpp">
-      <Filter>Header Files\AST</Filter>
-    </ClInclude>
-    <ClInclude Include="Scope.hpp">
+    <ClInclude Include="include\Sema\Scope.hpp">
       <Filter>Header Files\Sema</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Sema\Sema.hpp">
+      <Filter>Header Files\Sema</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Basic.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ForwardDeclarations.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

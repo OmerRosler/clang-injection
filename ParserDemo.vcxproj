@@ -68,12 +68,14 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)include</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)include</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -122,50 +124,51 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ASTStmt.cpp" />
-    <ClCompile Include="DeclContext.cpp" />
-    <ClCompile Include="IdentifierInfo.cpp" />
-    <ClCompile Include="IdentifierTable.cpp" />
-    <ClCompile Include="ParseStmt.cpp" />
-    <ClCompile Include="Scope.cpp" />
-    <ClCompile Include="SemaLookup.cpp" />
-    <ClCompile Include="ASTDecl.cpp" />
-    <ClCompile Include="ASTDecl.hpp" />
-    <ClCompile Include="ASTExpr.cpp" />
-    <ClCompile Include="ASTType.cpp" />
-    <ClCompile Include="ASTType.hpp" />
+    <ClCompile Include="lib\AST\ASTDecl.cpp" />
+    <ClCompile Include="lib\AST\ASTExpr.cpp" />
+    <ClCompile Include="lib\AST\ASTStmt.cpp" />
+    <ClCompile Include="lib\AST\ASTType.cpp" />
+    <ClCompile Include="lib\AST\DeclContext.cpp" />
+    <ClCompile Include="lib\Lexer\IdentifierInfo.cpp" />
+    <ClCompile Include="lib\Lexer\Lexer.cpp" />
+    <ClCompile Include="lib\Lexer\Token.cpp" />
+    <ClCompile Include="lib\Parser\ParseDecl.cpp" />
+    <ClCompile Include="lib\Parser\ParseExpr.cpp" />
+    <ClCompile Include="lib\Parser\Parser.cpp" />
+    <ClCompile Include="lib\Parser\ParseStmt.cpp" />
+    <ClCompile Include="lib\Parser\ParseType.cpp" />
+    <ClCompile Include="lib\Preprocessor\IdentifierTable.cpp" />
+    <ClCompile Include="lib\Sema\Scope.cpp" />
+    <ClCompile Include="lib\Sema\SemaDecl.cpp" />
+    <ClCompile Include="lib\Sema\SemaExpr.cpp" />
+    <ClCompile Include="lib\Sema\SemaLookup.cpp" />
+    <ClCompile Include="lib\Sema\SemaStmt.cpp" />
+    <ClCompile Include="lib\Sema\SemaType.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Lexer.cpp" />
-    <ClCompile Include="ParseDecl.cpp" />
-    <ClCompile Include="ParseExpr.cpp" />
-    <ClCompile Include="Parser.cpp" />
-    <ClCompile Include="ParseType.cpp" />
-    <ClCompile Include="SemaDecl.cpp" />
-    <ClCompile Include="SemaExpr.cpp" />
-    <ClCompile Include="SemaStmt.cpp" />
-    <ClCompile Include="SemaType.cpp" />
     <ClCompile Include="test_files\compound_block.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="Token.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ASTContext.hpp" />
-    <ClInclude Include="ASTExpr.hpp" />
-    <ClInclude Include="ASTStmt.hpp" />
-    <ClInclude Include="Basic.hpp" />
-    <ClInclude Include="DeclContext.hpp" />
-    <ClInclude Include="ForwardDeclarations.hpp" />
-    <ClInclude Include="IdentifierInfo.hpp" />
-    <ClInclude Include="IdentifierTable.hpp" />
-    <ClInclude Include="Lexer.hpp" />
-    <ClInclude Include="LookupResult.hpp" />
-    <ClInclude Include="Parser.hpp" />
-    <ClInclude Include="Preprocessor.hpp" />
-    <ClInclude Include="Scope.hpp" />
-    <ClInclude Include="Sema.hpp" />
-    <ClInclude Include="Token.hpp" />
+    <ClInclude Include="include\AST\ASTBases.hpp" />
+    <ClInclude Include="include\AST\ASTContext.hpp" />
+    <ClInclude Include="include\AST\ASTDecl.hpp" />
+    <ClInclude Include="include\AST\ASTExpr.hpp" />
+    <ClInclude Include="include\AST\ASTStmt.hpp" />
+    <ClInclude Include="include\AST\ASTType.hpp" />
+    <ClInclude Include="include\AST\DeclContext.hpp" />
+    <ClInclude Include="include\Basic.hpp" />
+    <ClInclude Include="include\ForwardDeclarations.hpp" />
+    <ClInclude Include="include\Lexer\IdentifierInfo.hpp" />
+    <ClInclude Include="include\Lexer\Lexer.hpp" />
+    <ClInclude Include="include\Lexer\Token.hpp" />
+    <ClInclude Include="include\Parser\Parser.hpp" />
+    <ClInclude Include="include\Preprocessor\IdentifierTable.hpp" />
+    <ClInclude Include="include\Preprocessor\Preprocessor.hpp" />
+    <ClInclude Include="include\Sema\LookupResult.hpp" />
+    <ClInclude Include="include\Sema\Scope.hpp" />
+    <ClInclude Include="include\Sema\Sema.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
