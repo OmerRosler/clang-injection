@@ -33,9 +33,15 @@ int main() {
     DeclContext dc;
     Sema sema(ctx, &dc);
     Parser parser(pp, sema);
-
-    CompoundStmt* ASTofBlock = parser.parseCompoundStatement();
-    ASTofBlock->print(std::cout); std::cout << "\n";
+    try
+    {
+        CompoundStmt* ASTofBlock = parser.parseCompoundStatement();
+        ASTofBlock->print(std::cout); std::cout << "\n";
+    }
+    catch (std::exception& e)
+    {
+        std::cout << "Caught Exception: " << e.what();
+    }
     return 0;
 
 }

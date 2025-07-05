@@ -1,92 +1,42 @@
 #include "DeclContext.hpp"
 #include "LookupResult.hpp"
 #include "ASTDecl.hpp"
+#include <cassert>
 
 bool DeclContext::lookupDirectMember(IdentifierInfo* II, LookupResult& R) const {
-    if (!II) return false;
-    auto it = Lookup.find(II);
-    if (it != Lookup.end()) {
-
-        R.addDecl(it-> second);
-        return true;
-    }
+    // TODO: Handle different declarations with the same name (overloads)
+    assert("Called stub function");
     return false;
 }
 
-NamedDecl* DeclContext::lookupFirstDirectMember(IdentifierInfo* II) const {
+NamedDecl* DeclContext::lookupDirectMember(IdentifierInfo* II) const {
     if (!II) return nullptr;
-    auto it = Lookup.find(II);
-    if (it != Lookup.end()) {
-        return it->second.front();
+    auto it = Members.find(II);
+    if (it != Members.end()) {
+        return it->second;
     }
     return nullptr;
 }
 
 
-DeclContext::lookup_data_type DeclContext::lookupDirectMember(IdentifierInfo* II) const {
-    if (!II) return lookup_data_type{};
-    auto it = Lookup.find(II);
-    if (it != Lookup.end()) {
-        return it->second;
-    }
-    return lookup_data_type{};
-}
-
-
 // Add a declaration into this context
-bool DeclContext::addDecl(NamedDecl* NewDecl) {
-    if (!NewDecl) return false;
-    Lookup[NewDecl->getIdentifier()].push_back(NewDecl);
-    return true;
-    //IdentifierInfo* DeclName = NewDecl->getIdentifier();
+NamedDecl* DeclContext::addDecl(NamedDecl* NewDecl) {
+    IdentifierInfo* Name = NewDecl->getIdentifier();
+    NamedDecl* existing = nullptr;
 
-    //NamedDecl* ExistingDecl = lookupDirectMember(NewDecl->getIdentifier());
-    //if (ExistingDecl) {
-    //    // --- Redeclaration Check Logic (Simplified, similar to Scope::AddDecl) ---
-    //    bool existingIsFunc = ExistingDecl->isFunctionDecl();
-    //    bool newIsFunc = NewDecl->isFunctionDecl();
-    //    bool existingIsTypedef = ExistingDecl->isTypedefDecl();
-    //    bool newIsTypedef = NewDecl->isTypedefDecl();
-    //    bool existingIsVar = ExistingDecl->isVarDecl();
-    //    bool newIsVar = NewDecl->isVarDecl();
-    //    bool existingIsNS = ExistingDecl->isNamespaceDecl();
-    //    bool newIsNS = NewDecl->isNamespaceDecl();
+    auto it = Members.find(Name);
+    if (it != Members.end()) {
+        existing = it->second; // Found an existing local declaration in *this* Scope
+    }
 
-    //    // Conflict: Different kind of symbol
-    //    if ((existingIsFunc != newIsFunc) ||
-    //        (existingIsTypedef != newIsTypedef && !existingIsFunc && !newIsFunc) ||
-    //        (existingIsVar != newIsVar && !existingIsFunc && !newIsFunc && !existingIsTypedef && !newIsTypedef) ||
-    //        (existingIsNS != newIsNS)) { // Namespace specific check
-    //        //Diags->Report(NewDecl->getLocation(), DiagnosticsEngine::Error,
-    //        //    "redeclaration of '" + DeclName + "' as different kind of symbol within DeclContext");
-    //        return false;
-    //    }
+    if (existing) {
+        // Link the NewDecl to the existing chain.
+        NewDecl->setPreviousDeclInContext(existing);
+    }
+    else {
+        // NewDecl->PreviousDeclInContext is already nullptr.
+    }
+    Members[Name] = NewDecl; // NewDecl is now the new head for this Scope's list
 
-    //    // Conflict: Same kind redefinition (simplified)
-    //    if (NewDecl->getKind() == ExistingDecl->getKind()) {
-    //        if (NewDecl->isTypedefDecl()) {
-    //            TypedefDecl* NewTD = static_cast<TypedefDecl*>(NewDecl);
-    //            TypedefDecl* ExistingTD = static_cast<TypedefDecl*>(ExistingDecl);
-    //            if (!(NewTD->getAliasedType() == ExistingTD->getAliasedType())) {
-    //                //Diags->Report(NewDecl->getLocation(), DiagnosticsEngine::Error, "redefinition of typedef '" + DeclName + "' with different types in DeclContext");
-    //                return false;
-    //            }
-    //            return true; // Valid re-typedef
-    //        }
-    //        else if (NewDecl->isVarDecl() || NewDecl->isNamespaceDecl()) {
-    //            //Diags->Report(NewDecl->getLocation(), DiagnosticsEngine::Error, "redefinition of " + (NewDecl->isVarDecl() ? "variable" : "namespace") + " '" + DeclName + "' in DeclContext");
-    //            return false;
-    //        }
-    //        else if (NewDecl->isFunctionDecl()) {
-    //            // For simplicity, assume redefinition if not an overload.
-    //            //Diags->Report(NewDecl->getLocation(), DiagnosticsEngine::Error, "redefinition of function '" + DeclName + "' in DeclContext (simple model)");
-    //            return false;
-    //        }
-    //    }
-    //    //Diags->Report(NewDecl->getLocation(), DiagnosticsEngine::Error, "unhandled redeclaration of '" + DeclName + "' in DeclContext");
-    //    return false;
-    //}
-
-    //Lookup[DeclName].push_back(NewDecl); // Add to members map if no conflict
-    //return true;
+    return existing; // Return the previous head if any, for Sema to use
 }

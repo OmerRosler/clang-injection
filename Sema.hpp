@@ -44,10 +44,18 @@ public:
     // queries
     bool isTypeName(IdentifierInfo* II, Scope* S);
 
+    template<typename... Args>
+    DeclContext* determine_owner_context(Args&&... args)
+    {
+        //TODO: Handle complex logic here for out of line definitions
+        return GetCurrentDeclContext();
+    }
+
     // declarations actions
-    VarDecl* ActOnVarDecl(Scope* S, DeclContext* DC,
+    bool PushOnScopeAndInsertRedeclaration(NamedDecl* NewDecl, Scope* S, DeclContext* DC);
+    VarDecl* ActOnVarDecl(Scope* S,
         Type* type, IdentifierInfo* II, Expr* init = nullptr);
-    TypedefDecl* ActOnTypedefDecl(Scope* S, DeclContext* DC, Type* type, IdentifierInfo* II);
+    TypedefDecl* ActOnTypedefDecl(Scope* S, Type* type, IdentifierInfo* II);
 
     // expressions actions
     Expr* ActOnIdentifierExpr(Scope* S, DeclContext* DC, IdentifierInfo* II);

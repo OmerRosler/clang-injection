@@ -2,37 +2,34 @@
 #include "Parser.hpp"
 #include "ASTDecl.hpp"
 #include <ranges>
+#include <cassert>
 
-Scope::lookup_result Scope::lookupLocal(IdentifierInfo* II) const {
-    lookup_result found = {};
-    for (Decl* D : decls())
+NamedDecl* Scope::lookupLocal(IdentifierInfo* II) const {
+    auto it = Locals.find(II);
+    if (it != Locals.end())
     {
-        if (auto* ND = dyn_cast<NamedDecl>(D))
-        {
-            if (ND->getIdentifier() == II)
-            {
-                found.push_back(ND);
-            }
-        }
-    }
-    return found;
-}
-
-NamedDecl* Scope::lookupFirstLocal(IdentifierInfo* II) const {
-    for (Decl* D : decls())
-    {
-        if (auto* ND = dyn_cast<NamedDecl>(D))
-        {
-            if (ND->getIdentifier() == II)
-            {
-                return ND;
-            }
-        }
+        return it->second;
     }
     return nullptr;
 }
 
-bool Scope::addDecl(NamedDecl* NewDecl) {
-    DeclsInScope.push_back(NewDecl); // Add to local map if no conflict
-    return true;
+NamedDecl* Scope::addDecl(NamedDecl* NewDecl) {
+    IdentifierInfo* Name = NewDecl->getIdentifier();
+    NamedDecl* existing = nullptr;
+
+    auto it = Locals.find(Name);
+    if (it != Locals.end()) {
+        existing = it->second; // Found an existing local declaration in *this* Scope
+    }
+
+    if (existing) {
+        // Link the NewDecl to the existing chain.
+        NewDecl->setPreviousDeclInContext(existing);
+    }
+    else {
+        // NewDecl->PreviousDeclInContext is already nullptr.
+    }
+    Locals[Name] = NewDecl; // NewDecl is now the new head for this Scope's list
+
+    return existing; // Return the previous head if any, for Sema to use
 }

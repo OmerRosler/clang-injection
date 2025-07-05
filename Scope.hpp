@@ -15,15 +15,14 @@ private:
     Scope* Parent;
     unsigned Flags;
     DeclContext* Entity; //owner of the scope if exists
-    using decl_storage = std::vector<Decl*>;
-    decl_storage DeclsInScope;
-
-    using lookup_result = std::vector <NamedDecl*>;
+    //TODO: Handle unnamed declarations
+    using decl_storage = std::unordered_map<IdentifierInfo*, NamedDecl*>;
+    decl_storage Locals;
 
 
 public:
 
-    using decl_range = decltype(std::views::reverse(std::declval<const decl_storage&>()));
+    using decl_range = const decl_storage&;
 
     Scope(Scope* Parent, unsigned Flags)
         : Parent(Parent), Entity(nullptr), Flags(Flags) {}
@@ -33,11 +32,10 @@ public:
 
     Scope* getParent() const { return Parent; }
 
-    bool addDecl(NamedDecl* NewDecl);
-    lookup_result lookupLocal(IdentifierInfo* II) const;
-    NamedDecl* lookupFirstLocal(IdentifierInfo* II) const;
+    NamedDecl* addDecl(NamedDecl* NewDecl);
+    NamedDecl* lookupLocal(IdentifierInfo* II) const;
 
-    decl_range decls() const { return std::views::reverse(DeclsInScope); }
+    decl_range decls() const { return Locals; }
 
 
 };

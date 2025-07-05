@@ -59,13 +59,6 @@ public:
         Decls.clear();
         Result = LookupResultKind::NotFound;
     }
-    void addDecl(DeclContext::lookup_data_type overload_set)
-    {
-        for (NamedDecl* ND : overload_set)
-        {
-            addDecl(ND);
-        }
-    }
 
     [[nodiscard]] bool empty() const { return Decls.empty(); }
 

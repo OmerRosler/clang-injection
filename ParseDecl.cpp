@@ -61,8 +61,7 @@ TypedefDecl* Parser::parseTypedef() {
     ConsumeToken(); // consume ';'
 
     // Semantic action: create the TypedefDecl
-    return Actions.ActOnTypedefDecl(CurrentScope, Actions.GetCurrentDeclContext(),
-        underlyingType, II);
+    return Actions.ActOnTypedefDecl(CurrentScope, underlyingType, II);
 }
 
 VarDecl* Parser::parseVarDecl() {
@@ -96,6 +95,5 @@ VarDecl* Parser::parseVarDecl() {
     }
     ConsumeToken(); // consume ';'
     
-    return Actions.ActOnVarDecl(CurrentScope, Actions.GetCurrentDeclContext(),
-        Ty, VarName, Init);
+    return Actions.ActOnVarDecl(CurrentScope, Ty, VarName, Init);
 }

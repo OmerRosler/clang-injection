@@ -13,9 +13,8 @@ bool Sema::LookupName(LookupResult& R, Scope* S, bool AllowBuiltinCreation) {
     // Try scope-based lookup
     for (Scope* Cur = S; Cur; Cur = Cur->getParent()) {
         //look at locals
-        for (Decl* D : Cur->decls())
+        for (auto&[LocalName, ND] : Cur->decls())
         {
-            auto* ND = dyn_cast<NamedDecl>(D);
             if (ND->getIdentifier() == Name)
             {
                 //found non function, it hides all, we stop everything
@@ -39,11 +38,21 @@ bool Sema::LookupName(LookupResult& R, Scope* S, bool AllowBuiltinCreation) {
         //lookup at the entity associated with the scope if exists (say other members of a class)
         if (DeclContext* DC = Cur->getEntity()) {
             //add results from semantic owner of the scope
-            DC->lookupDirectMember(Name,R);
-            if (!R.empty())
+            for (auto& [LocalName, ND] : DC->decls())
             {
-                //found in DC, hides all else
-                break;
+                if (ND->getIdentifier() == Name)
+                {
+                    //found non function, it hides all, we stop everything
+                    if (!isa<FunctionDecl>(ND))
+                    {
+                        // if already found functions, remove them
+                        //TODO: If R is not empty here, there is an error, we report it when we add diagnostics
+                        R.clear();
+                        R.addDecl(ND);
+                        return true;
+                    }
+                    R.addDecl(ND);
+                }
             }
         }
     }
