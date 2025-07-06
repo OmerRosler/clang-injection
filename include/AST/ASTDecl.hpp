@@ -14,20 +14,30 @@ public:
         Typedef,
         Function,
         Namespace,
+        Record,
+        Enum,
+        CXXMethod,
         // ... other decl kinds can go here
     };
 
     static bool classof(const Decl* D) { return true; } // base class matches all
 
     explicit Decl(Kind k, DeclContext* DC) : 
-        PreviousDeclInContext(nullptr), K(k), OwningDC(DC) {}
+        PrevInContextPtr(nullptr), K(k), OwningDC(nullptr), IsInvalidDecl(false) 
+    {
+        setOwningDeclContext(DC);
+    }
 
-    Decl* getPreviousDeclInContext() const { return PreviousDeclInContext; }
-    void setPreviousDeclInContext(Decl* Prev) { PreviousDeclInContext = Prev; }
+    // Intrusive list setters/getters (for DeclContext internal use)
+    Decl* getNextInContext() const { return NextInContextPtr; }
+    void setNextInContext(Decl* D) { NextInContextPtr = D; }
+    Decl* getPrevInContext() const { return PrevInContextPtr; }
+    void setPrevInContext(Decl* D) { PrevInContextPtr = D; }
+
 
     Kind getKind() const { return K; }
     DeclContext* getOwningDeclContext() const { return OwningDC; }
-    void setOwningDeclContext(DeclContext* DC) { OwningDC = DC; }
+    void setOwningDeclContext(DeclContext* DC);
 
     bool isInvalidDecl() const { return IsInvalidDecl; }
     void setInvalid(bool invalid = true) { IsInvalidDecl = invalid; }
@@ -46,7 +56,9 @@ public:
 
 protected:
 
-    Decl* PreviousDeclInContext;
+    // Pointers for intrusive list in DeclContext
+    Decl* NextInContextPtr; // Pointer to the next Decl in the OwningDC's list
+    Decl* PrevInContextPtr; // Pointer to the previous Decl in the OwningDC's list
     Kind K;
     DeclContext* OwningDC = nullptr;
     bool IsInvalidDecl;
@@ -62,6 +74,7 @@ struct NamedDecl : public Decl {
     NamedDecl(Kind k, DeclContext* DC, IdentifierInfo* id) : Decl(k, DC), Id(id) {}
 
     static bool classof(const Decl* D) {
+        //TODO: Fix this
         return D->getKind() == Kind::Var || D->getKind() == Kind::Typedef;
     }
     IdentifierInfo* getIdentifier() const { return Id; }
@@ -108,11 +121,20 @@ struct TypedefDecl : public NamedDecl {
 struct FunctionDecl : public NamedDecl, public DeclContext
 {
     //TODO
-    FunctionDecl(IdentifierInfo* id, DeclContext* DC)
-        : NamedDecl(Kind::Function, DC, id) {}
+    FunctionDecl(IdentifierInfo* id, DeclContext* OwnerDC)
+        : NamedDecl(Kind::Function, OwnerDC, id), 
+        DeclContext(DeclContextKind::Function, static_cast<Decl*>(this)) {}
 
     static bool classof(const Decl* D) {
         return D->getKind() == Kind::Function;
+    }
+    /*static bool classof(const DeclContext* D) {
+        return D->getDeclContextKind() == DeclContextKind::Function;
+    }*/
+
+    void print(std::ostream& os) const override
+    {
+        os << "In function ";
     }
 
 };
@@ -121,10 +143,16 @@ struct NamespaceDecl : public NamedDecl, public DeclContext
 {
     //TODO
     NamespaceDecl(IdentifierInfo* id, DeclContext* DC)
-        : NamedDecl(Kind::Namespace, DC, id) {}
+        : NamedDecl(Kind::Namespace, DC, id), 
+        DeclContext(DeclContextKind::Namespace, static_cast<Decl*>(this)) {}
 
     static bool classof(const Decl* D) {
         return D->getKind() == Kind::Namespace;
+    }
+
+    void print(std::ostream& os) const override
+    {
+        os << "In namespace ";
     }
 
 };

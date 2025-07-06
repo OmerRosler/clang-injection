@@ -9,6 +9,7 @@
 #include <sstream>
 #include "Parser/Parser.hpp"
 #include "Sema/Sema.hpp"
+#include "AST/ASTDecl.hpp"
 // === Example Usage ===
 std::string file_to_string(const char* path)
 {
@@ -30,8 +31,11 @@ int main() {
 
 
     ASTContext ctx;
-    DeclContext dc;
-    Sema sema(ctx, &dc);
+    //TODO: Remove this when we actually get to parsing the functions
+    IdentifierInfo main_name("main");
+    FunctionDecl main(&main_name, nullptr);
+
+    Sema sema(ctx, static_cast<DeclContext*>(&main));
     Parser parser(pp, sema);
     try
     {

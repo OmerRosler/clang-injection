@@ -72,6 +72,5 @@ protected:
     Preprocessor& PP;
     Sema& Actions;
     Token Tok;
-    Scope* CurrentScope;
 
 };

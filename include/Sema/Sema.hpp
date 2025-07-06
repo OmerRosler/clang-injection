@@ -9,6 +9,8 @@
 class Sema {
     // === Core State ===
     ASTContext& Context;               // Owns the AST nodes
+    //Scope* GlobalLexicalScope;
+    //DeclContext* GlobalSemanticContext; // Typically a TranslationUnitDecl
     //DiagnosticsEngine& Diags;         // For errors/warnings
     // SourceManager& SourceMgr;         // For tracking locations
     //Preprocessor& PP;                 // Token info
@@ -24,19 +26,43 @@ class Sema {
     DeclContext* CurrentDeclContext;         // E.g. current function, class, etc.
 
     bool LookupADL(LookupResult& R, Scope* S);
+    static DeclContext* getParentDeclContext(DeclContext* DC);
 
 public:
+    class ParseScope;
+    class ContextRAII;
+    friend class ParseScope;
+    friend class ContextRAII;
+
     explicit Sema(ASTContext& c, DeclContext* CurDeclContext) : Context(c), CurrentDeclContext(CurDeclContext) {}
     
+    // TODO: Should we implement a logic here? or is it done by the ASTContext
+    virtual ~Sema() = default;
     DeclContext* GetCurrentDeclContext() const
     {
         return CurrentDeclContext;
     }
+    
+
+    // --- Scope Management ---
+    // Pushes a new lexical scope onto the stack.
+    void PushScope(unsigned flags);
+    void PopScope();
+    Scope* getCurrentScope() const { return CurScope; }
+
+    void PushDeclContext(DeclContext* DC);
+    void PopDeclContext();
+
+    void PushOnScopeChains(NamedDecl* D, Scope* S);
 
     // lookup
     NamedDecl* LookupSingleName(DeclContext* DC, IdentifierInfo* II);
     //unqualified name lookup (no ADL)
     bool LookupName(LookupResult& R, Scope* S, bool AllowBuiltinCreation = false);
+    bool LookupName(LookupResult& R, bool AllowBuiltinCreation = false)
+    {
+        return LookupName(R, CurScope, AllowBuiltinCreation);
+    }
     bool LookupQualifiedName(LookupResult& R, DeclContext* DC);
     bool LookupParsedName(LookupResult& R, Scope* S, /* CXXScopeSpec* SS stubbed */ void* = nullptr);
     bool LookupNameOrErr(LookupResult& R, Scope* S);
@@ -52,7 +78,6 @@ public:
     }
 
     // declarations actions
-    bool PushOnScopeAndInsertRedeclaration(NamedDecl* NewDecl, Scope* S, DeclContext* DC);
     VarDecl* ActOnVarDecl(Scope* S,
         Type* type, IdentifierInfo* II, Expr* init = nullptr);
     TypedefDecl* ActOnTypedefDecl(Scope* S, Type* type, IdentifierInfo* II);

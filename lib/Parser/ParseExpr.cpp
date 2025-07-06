@@ -52,7 +52,7 @@ Expr* Parser::parsePrimaryExpr() {
     else if (Tok.is(TokenKind::identifier)) {
         IdentifierInfo* II = Tok.getIdentifierInfo();
         ConsumeToken();
-        return Actions.ActOnIdentifierExpr(this->CurrentScope, 
+        return Actions.ActOnIdentifierExpr(Actions.getCurrentScope(),
             Actions.GetCurrentDeclContext(), II);
     }
     else if (Tok.is(TokenKind::l_paren))

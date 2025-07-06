@@ -2,6 +2,7 @@
 #include "AST/ASTStmt.hpp"
 #include "Sema/Scope.hpp"
 #include "Sema/Sema.hpp"
+#include "Sema/RAIIHelpers.hpp"
 
 Stmt* Parser::parseStatement() {
     if (Tok.is(TokenKind::l_brace)) {
@@ -41,14 +42,13 @@ CompoundStmt* Parser::parseCompoundStatement() {
 	//CurScopeFlags |= ScopeFlags::BlockScope;
 	unsigned new_scope_flags = static_cast<unsigned>(ScopeFlags::CompoundScope);
     // Enter a new block scope
-	Scope CompoundScope(CurrentScope, new_scope_flags);
-	CurrentScope = &CompoundScope;
+    Sema::ParseScope scopeGuard(Actions, new_scope_flags);
 
     std::vector<Stmt*> statements;
 
 	// Parse statements...
     while (!Tok.is(TokenKind::r_brace) && Tok.isNot(TokenKind::eof)) {
-        auto* stmt = parseDeclarationOrStatement(CurrentScope);
+        auto* stmt = parseDeclarationOrStatement(Actions.getCurrentScope());
         if (!stmt)
         {
             throw std::runtime_error("Invalid statement");
@@ -58,7 +58,6 @@ CompoundStmt* Parser::parseCompoundStatement() {
 
 	// Exit scope
     ExpectAndConsume(TokenKind::r_brace);
-	CurrentScope = CompoundScope.getParent();
     return Actions.ActOnCompoundStmt(std::move(statements));
 
 }

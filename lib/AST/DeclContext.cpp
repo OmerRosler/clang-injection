@@ -3,40 +3,45 @@
 #include "AST/ASTDecl.hpp"
 #include <cassert>
 
-bool DeclContext::lookupDirectMember(IdentifierInfo* II, LookupResult& R) const {
-    // TODO: Handle different declarations with the same name (overloads)
-    assert("Called stub function");
-    return false;
+DeclContext* DeclContext::getParent() const
+{
+    if (DeclContextDecl) return DeclContextDecl->getOwningDeclContext();
+    throw std::runtime_error("Haven't implemeneted parentless DeclContext yet");
 }
 
-NamedDecl* DeclContext::lookupDirectMember(IdentifierInfo* II) const {
-    if (!II) return nullptr;
-    auto it = Members.find(II);
-    if (it != Members.end()) {
-        return it->second;
-    }
-    return nullptr;
+// --- Private/Protected internal methods for Sema to call ---
+    // Sema calls these to register a Decl to this DeclContext's internal map.
+    // This method just performs the insertion; it doesn't decide *if* to insert.
+void DeclContext::addDeclInternal(NamedDecl* D) {
+    // In a real compiler, this would handle overloads and redeclarations
+    // (e.g., adding to a list of functions if multiple exist with the same name).
+    // For simplicity, we just insert the latest.
+    VisibleMembers[D->getIdentifier()] = D;
+    std::cout << "  DEBUG: DeclContext '" <<
+        getDeclContextKindName() << "' added '"
+        << D->getIdentifier()->getName() << "' to its MemberMap." << std::endl;
 }
 
-
-// Add a declaration into this context
-NamedDecl* DeclContext::addDecl(NamedDecl* NewDecl) {
-    IdentifierInfo* Name = NewDecl->getIdentifier();
-    NamedDecl* existing = nullptr;
-
-    auto it = Members.find(Name);
-    if (it != Members.end()) {
-        existing = it->second; // Found an existing local declaration in *this* Scope
-    }
-
-    if (existing) {
-        // Link the NewDecl to the existing chain.
-        NewDecl->setPreviousDeclInContext(existing);
+// This method is called by Decl::setDeclContext() internally.
+// It links the Decl into this DeclContext's intrusive list.
+void DeclContext::addDeclToContext(Decl* D) {
+    //TODO: This is general logic of intrusive list, maybe move it to a separate mixin class
+    if (!FirstDeclInContext) {
+        FirstDeclInContext = D;
+        LastDeclInContext = D;
     }
     else {
-        // NewDecl->PreviousDeclInContext is already nullptr.
+        LastDeclInContext->setNextInContext(D);
+        D->setPrevInContext(LastDeclInContext);
+        LastDeclInContext = D;
     }
-    Members[Name] = NewDecl; // NewDecl is now the new head for this Scope's list
+}
 
-    return existing; // Return the previous head if any, for Sema to use
+// Public API for lookup. Queries this DeclContext's map.
+NamedDecl* DeclContext::lookup(IdentifierInfo* Name) { // Renamed from lookupMember for clarity
+    auto It = VisibleMembers.find(Name);
+    if (It != VisibleMembers.end()) {
+        return It->second;
+    }
+    return nullptr;
 }

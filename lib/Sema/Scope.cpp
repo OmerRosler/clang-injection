@@ -13,23 +13,17 @@ NamedDecl* Scope::lookupLocal(IdentifierInfo* II) const {
     return nullptr;
 }
 
-NamedDecl* Scope::addDecl(NamedDecl* NewDecl) {
-    IdentifierInfo* Name = NewDecl->getIdentifier();
-    NamedDecl* existing = nullptr;
+void Scope::addDecl(NamedDecl* NewDecl) {
+    Locals[NewDecl->getIdentifier()] = NewDecl;
+    std::cout << "  DEBUG: Scope (Addr: " << this << ") added '"
+        << NewDecl->getName() << "' to its LocalDeclMap." << std::endl;
+}
 
-    auto it = Locals.find(Name);
-    if (it != Locals.end()) {
-        existing = it->second; // Found an existing local declaration in *this* Scope
-    }
 
-    if (existing) {
-        // Link the NewDecl to the existing chain.
-        NewDecl->setPreviousDeclInContext(existing);
+void Scope::dump() const {
+    std::cout << "Scope (Addr: " << this << ", Parent: " << Parent << ") Dump:" << std::endl;
+    for (const auto& pair : Locals) {
+        std::cout << "    Local: " << pair.first->getName() << " -> (Addr: " << pair.second << ")" << std::endl;
     }
-    else {
-        // NewDecl->PreviousDeclInContext is already nullptr.
-    }
-    Locals[Name] = NewDecl; // NewDecl is now the new head for this Scope's list
-
-    return existing; // Return the previous head if any, for Sema to use
+    std::cout << "End Scope Dump." << std::endl;
 }

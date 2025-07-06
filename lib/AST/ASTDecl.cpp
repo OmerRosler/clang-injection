@@ -2,6 +2,14 @@
 #include "AST/ASTExpr.hpp"
 #include "AST/ASTType.hpp"
 
+void Decl::setOwningDeclContext(DeclContext* DC) {
+    OwningDC = DC;
+    if (DC) {
+        DC->addDeclToContext(this); // Tell the DeclContext to add this Decl
+    }
+}
+
+
 void VarDecl::print(std::ostream& os) const {
     os << "VarDecl: " << getName() << " : ";
     if (VarType) VarType->print(os);
