@@ -68,9 +68,19 @@ public:
     Stmt* parseStatement();
     Stmt* parseDeclarationOrStatement(Scope* S);
 
+    Scope* getCurrentScope() const { return CurScope; }
+    void setCurrentScope(Scope* S) { CurScope = S; }
+
+    Sema& getSema()
+    {
+        return Actions;
+    }
+
 protected:
     Preprocessor& PP;
     Sema& Actions;
     Token Tok;
+
+    Scope* CurScope = nullptr;
 
 };

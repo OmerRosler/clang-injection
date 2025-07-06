@@ -1,6 +1,7 @@
 #include "Sema/Scope.hpp"
 #include "Parser/Parser.hpp"
 #include "AST/ASTDecl.hpp"
+#include "Sema/Sema.hpp"
 #include <ranges>
 #include <cassert>
 

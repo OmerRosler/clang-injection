@@ -1,24 +1,23 @@
 #include "Sema/Sema.hpp"
 #include "Sema/Scope.hpp"
 #include "AST/ASTDecl.hpp"
+#include "Parser/Parser.hpp"
 #include <cassert>
-void Sema::PushScope(unsigned flags) {
-    // Allocate a new Scope, setting its parent to the current CurScope.
-    Scope* newScope = Context.create<Scope>(CurScope, flags);
-    CurScope = newScope; // Update CurScope to point to the new innermost scope
+
+Sema::ParseScope::ParseScope(Parser& P,
+    unsigned flags,
+    Decl* associatedDecl) : P(P), ActualScope(P.getCurrentScope(), flags) {
+    P.setCurrentScope(&ActualScope);
+    P.getSema().ActOnScopeStart(&ActualScope, associatedDecl); // Pass associatedDecl to Sema
+    std::cout << "  [Parser::ParseScope]: Pushed new lexical scope (flags: " << flags << ", ptr: " << P.getCurrentScope() << ")" << std::endl;
+}
+Sema::ParseScope::~ParseScope() {
+    P.getSema().ActOnScopeEnd(&ActualScope); // Pass the Scope object to Sema for proper context popping
+    P.setCurrentScope(ActualScope.getParent());// Restore Parser's current scope to its parent
+    std::cout << "  [Parser::ParseScope]: Popped lexical scope (ptr: " << &ActualScope << ")" << std::endl;
 }
 
-// Pops the current lexical scope from the stack.
-void Sema::PopScope() {
-    if (!CurScope->getParent()) {
-        // Should not pop the outermost global scope through this method typically.
-        std::cerr << "ERROR: Attempted to pop the global lexical scope!" << std::endl;
-        return;
-    }
-    // Update CurScope to point to the parent scope.
-    // The popped Scope object itself is now "inactive" but not deleted here.
-    CurScope = CurScope->getParent();
-}
+
 
 void Sema::PushDeclContext(DeclContext* DC) {
     CurrentDeclContext = DC;
@@ -35,6 +34,46 @@ void Sema::PopDeclContext() {
     CurrentDeclContext = CurrentDeclContext->getParent(); // Fallback to global for demo purposes
     std::cout << "  DEBUG: Current DeclContext reverted to " << CurrentDeclContext->getDeclContextKindName() << std::endl;
 }
+
+void Sema::ActOnScopeStart(Scope* S, Decl* AssociatedDecl) {
+    if (S == nullptr) {
+        std::cerr << "Sema: Error: ActOnScopeStart called with nullptr Scope!" << std::endl;
+        return;
+    }
+
+    std::cout << "  Sema: ActOnScopeStart (Scope ptr: " << S << ", Flags: " << S->getFlags() << ")" << std::endl;
+
+    DeclContext* newDeclContextForScope = nullptr;
+    if (S->getFlags() & ScopeFlags::FunctionScope) {
+        if (FunctionDecl* FD = dyn_cast<FunctionDecl>(AssociatedDecl)) {
+            newDeclContextForScope = FD;
+            PushDeclContext(newDeclContextForScope);
+            std::cout << "  Sema: DeclContext changed to FunctionDecl: " << FD->getName() << std::endl;
+        }
+        else {
+            std::cerr << "Sema: Warning: FnScope flag set but no FunctionDecl provided for scope start!" << std::endl;
+        }
+    }
+    S->Entity = newDeclContextForScope;
+}
+
+void Sema::ActOnScopeEnd(Scope* S) {
+    if (S == nullptr) {
+        std::cerr << "Sema: Error: ActOnScopeEnd called with nullptr Scope!" << std::endl;
+        return;
+    }
+    std::cout << "  Sema: ActOnScopeEnd (Scope ptr: " << S << ")" << std::endl;
+
+    if (S->Entity != nullptr) {
+        PopDeclContext();
+        std::cout << "  Sema: DeclContext restored." << std::endl;
+    }
+}
+
+
+
+
+
 // --- The Core of Name Lookup Registration in Sema ---
     // Takes the NamedDecl to register and the *lexical Scope* where it becomes visible.
 void Sema::PushOnScopeChains(NamedDecl* D, Scope* S) {
@@ -81,20 +120,16 @@ void Sema::PushOnScopeChains(NamedDecl* D, Scope* S) {
 }
 
 
-VarDecl* Sema::ActOnVarDecl(Scope* S,
-    Type* Ty, IdentifierInfo* II, Expr* Init) {
+VarDecl* Sema::ActOnVarDecl(Type* Ty, IdentifierInfo* II, Expr* Init) {
     DeclContext* new_owner = determine_owner_context(Ty, II, Init);
     // 1. Create the Decl AST node. Sema owns this memory.
     VarDecl* VD = Context.create<VarDecl>(II, new_owner, Ty, Init);
-    PushOnScopeChains(VD, S);
     return VD;
 }
 
 
-TypedefDecl* Sema::ActOnTypedefDecl(Scope* S, 
-    Type* Ty, IdentifierInfo* II) {
+TypedefDecl* Sema::ActOnTypedefDecl(Type* Ty, IdentifierInfo* II) {
     DeclContext* new_owner = determine_owner_context(Ty, II);
     TypedefDecl* TD = Context.create<TypedefDecl>(II, new_owner, Ty);
-    PushOnScopeChains(TD, S);
     return TD;
 }

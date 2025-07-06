@@ -16,17 +16,20 @@ private:
     //TODO: Handle unnamed declarations
     using decl_storage = std::map<IdentifierInfo*, NamedDecl*>;
     decl_storage Locals;
+    DeclContext* Entity;
 
+    friend class Sema;
 
 public:
 
     using decl_range = const decl_storage&;
 
     Scope(Scope* Parent, unsigned Flags)
-        : Parent(Parent), Flags(Flags) {}
+        : Parent(Parent), Flags(Flags), Entity(nullptr) {}
 
     Scope* getParent() const { return Parent; }
     void setParent(Scope* P) { Parent = P; }
+    unsigned getFlags() const { return Flags; }
 
     void addDecl(NamedDecl* NewDecl);
     NamedDecl* lookupLocal(IdentifierInfo* II) const;

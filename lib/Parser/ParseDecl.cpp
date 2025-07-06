@@ -61,7 +61,9 @@ TypedefDecl* Parser::parseTypedef() {
     ConsumeToken(); // consume ';'
 
     // Semantic action: create the TypedefDecl
-    return Actions.ActOnTypedefDecl(Actions.getCurrentScope(), underlyingType, II);
+    TypedefDecl* added = Actions.ActOnTypedefDecl(underlyingType, II);
+    Actions.PushOnScopeChains(added, getCurrentScope());
+    return added;
 }
 
 VarDecl* Parser::parseVarDecl() {
@@ -94,6 +96,8 @@ VarDecl* Parser::parseVarDecl() {
         throw std::runtime_error("Error: Expected ';' after variable declaration");
     }
     ConsumeToken(); // consume ';'
-    
-    return Actions.ActOnVarDecl(Actions.getCurrentScope(), Ty, VarName, Init);
+    // Always add to the provided lexical scope for basic visibility.
+    VarDecl* added =  Actions.ActOnVarDecl(Ty, VarName, Init);
+    Actions.PushOnScopeChains(added, getCurrentScope());
+    return added;
 }

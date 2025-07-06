@@ -6,6 +6,8 @@
 
 #include "Preprocessor/Preprocessor.hpp"
 
+#include "Sema/Scope.hpp"
+
 class Sema {
     // === Core State ===
     ASTContext& Context;               // Owns the AST nodes
@@ -19,7 +21,6 @@ class Sema {
     //Builtin::Context BuiltinInfo;     // Info about builtin functions/types
 
     // === Scope and Lookup ===
-    Scope* CurScope = nullptr;
     //std::vector<DeclContext*> ContextStack;
 
     // === Symbol Tables ===
@@ -29,10 +30,9 @@ class Sema {
     static DeclContext* getParentDeclContext(DeclContext* DC);
 
 public:
+
     class ParseScope;
-    class ContextRAII;
     friend class ParseScope;
-    friend class ContextRAII;
 
     explicit Sema(ASTContext& c, DeclContext* CurDeclContext) : Context(c), CurrentDeclContext(CurDeclContext) {}
     
@@ -42,13 +42,6 @@ public:
     {
         return CurrentDeclContext;
     }
-    
-
-    // --- Scope Management ---
-    // Pushes a new lexical scope onto the stack.
-    void PushScope(unsigned flags);
-    void PopScope();
-    Scope* getCurrentScope() const { return CurScope; }
 
     void PushDeclContext(DeclContext* DC);
     void PopDeclContext();
@@ -59,10 +52,6 @@ public:
     NamedDecl* LookupSingleName(DeclContext* DC, IdentifierInfo* II);
     //unqualified name lookup (no ADL)
     bool LookupName(LookupResult& R, Scope* S, bool AllowBuiltinCreation = false);
-    bool LookupName(LookupResult& R, bool AllowBuiltinCreation = false)
-    {
-        return LookupName(R, CurScope, AllowBuiltinCreation);
-    }
     bool LookupQualifiedName(LookupResult& R, DeclContext* DC);
     bool LookupParsedName(LookupResult& R, Scope* S, /* CXXScopeSpec* SS stubbed */ void* = nullptr);
     bool LookupNameOrErr(LookupResult& R, Scope* S);
@@ -77,10 +66,12 @@ public:
         return GetCurrentDeclContext();
     }
 
+    void ActOnScopeStart(Scope* S, Decl* AssociatedDecl = nullptr);
+    void ActOnScopeEnd(Scope* S);
+
     // declarations actions
-    VarDecl* ActOnVarDecl(Scope* S,
-        Type* type, IdentifierInfo* II, Expr* init = nullptr);
-    TypedefDecl* ActOnTypedefDecl(Scope* S, Type* type, IdentifierInfo* II);
+    VarDecl* ActOnVarDecl(Type* type, IdentifierInfo* II, Expr* init = nullptr);
+    TypedefDecl* ActOnTypedefDecl(Type* type, IdentifierInfo* II);
 
     // expressions actions
     Expr* ActOnIdentifierExpr(Scope* S, DeclContext* DC, IdentifierInfo* II);
@@ -97,4 +88,24 @@ public:
     //statements actions
     DeclStmt* ActOnDeclStmt(Decl* D);
     CompoundStmt* ActOnCompoundStmt(std::vector<Stmt*> stmts);
+};
+
+class Sema::ParseScope {
+    Parser& P; // Reference to the Sema instance
+    Scope ActualScope;
+public:
+    ParseScope(Parser& P,
+        unsigned flags = ScopeFlags::CompoundScope,
+        Decl* associatedDecl = nullptr);
+    ~ParseScope();
+    const Scope* getScope() const
+    {
+        return &ActualScope;
+    }
+    Scope* getScope()
+    {
+        return &ActualScope;
+    }
+    ParseScope(const ParseScope&) = delete; // Disable copy/move
+    ParseScope& operator=(const ParseScope&) = delete;
 };

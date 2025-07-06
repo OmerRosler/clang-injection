@@ -167,7 +167,6 @@
     <ClInclude Include="include\Preprocessor\IdentifierTable.hpp" />
     <ClInclude Include="include\Preprocessor\Preprocessor.hpp" />
     <ClInclude Include="include\Sema\LookupResult.hpp" />
-    <ClInclude Include="include\Sema\RAIIHelpers.hpp" />
     <ClInclude Include="include\Sema\Scope.hpp" />
     <ClInclude Include="include\Sema\Sema.hpp" />
   </ItemGroup>
