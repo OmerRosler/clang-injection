@@ -12,7 +12,7 @@ DeclContext* DeclContext::getParent() const
 // --- Private/Protected internal methods for Sema to call ---
     // Sema calls these to register a Decl to this DeclContext's internal map.
     // This method just performs the insertion; it doesn't decide *if* to insert.
-void DeclContext::addDeclInternal(NamedDecl* D) {
+void DeclContext::addNamedDeclToLookupMap(NamedDecl* D) {
     // In a real compiler, this would handle overloads and redeclarations
     // (e.g., adding to a list of functions if multiple exist with the same name).
     // For simplicity, we just insert the latest.

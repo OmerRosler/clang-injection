@@ -69,6 +69,7 @@ protected:
 // NamedDecl derives from Decl, adds a name
 struct NamedDecl : public Decl {
     IdentifierInfo* Id;
+    NamedDecl* PreviousDeclInContext = nullptr;
 
 
     NamedDecl(Kind k, DeclContext* DC, IdentifierInfo* id) : Decl(k, DC), Id(id) {}
@@ -79,6 +80,8 @@ struct NamedDecl : public Decl {
     }
     IdentifierInfo* getIdentifier() const { return Id; }
     const std::string& getName() const { return Id->getName(); }
+
+    NamedDecl* getPreviousDeclInContext() const { return PreviousDeclInContext; } 
 
 
 

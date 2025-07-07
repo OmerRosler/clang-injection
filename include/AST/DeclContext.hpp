@@ -45,7 +45,7 @@ public:
     // --- Private/Protected internal methods for Sema to call ---
     // Sema calls these to register a Decl to this DeclContext's internal map.
     // This method just performs the insertion; it doesn't decide *if* to insert.
-    void addDeclInternal(NamedDecl* D);
+    void addNamedDeclToLookupMap(NamedDecl* D);
 
     // This method is called by Decl::setDeclContext() internally.
     // It links the Decl into this DeclContext's intrusive list.

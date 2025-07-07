@@ -50,6 +50,8 @@ public:
 
     // lookup
     NamedDecl* LookupSingleName(DeclContext* DC, IdentifierInfo* II);
+    NamedDecl* findPreviousDecl(Scope* S, IdentifierInfo* Name);
+    bool CheckRedeclaration(NamedDecl* NewDecl, NamedDecl* PreviousDecl);
     //unqualified name lookup (no ADL)
     bool LookupName(LookupResult& R, Scope* S, bool AllowBuiltinCreation = false);
     bool LookupQualifiedName(LookupResult& R, DeclContext* DC);

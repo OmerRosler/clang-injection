@@ -2,6 +2,7 @@
 #include "Sema/Scope.hpp"
 #include "AST/ASTDecl.hpp"
 #include "Parser/Parser.hpp"
+#include "Sema/LookupResult.hpp"
 #include <cassert>
 
 Sema::ParseScope::ParseScope(Parser& P,
@@ -71,14 +72,46 @@ void Sema::ActOnScopeEnd(Scope* S) {
 }
 
 
+// Helper to find the previous declaration of a given name in the current context.
+NamedDecl* Sema::findPreviousDecl(Scope* S, IdentifierInfo* Name) {
+    LookupResult R(*this, Name);
+    LookupName(R, S);
+    return R.getFoundDecl();
+}
+
+// Function to check redeclaration legality. Always returns true (illegal) for this task.
+bool Sema::CheckRedeclaration(NamedDecl* NewDecl, NamedDecl* PreviousDecl) {
+    return true; // Indicate that this redeclaration is illegal
+}
 
 
 
 // --- The Core of Name Lookup Registration in Sema ---
     // Takes the NamedDecl to register and the *lexical Scope* where it becomes visible.
 void Sema::PushOnScopeChains(NamedDecl* D, Scope* S) {
+    //TODO: There is no swithch case in clang, the flow is linear for each type of Decl
+    NamedDecl* PrevDecl = findPreviousDecl(S, D->getIdentifier());
+
+    // 2. Perform legality check if a previous declaration was found.
+    bool IsRedeclarationIllegal = false;
+    if (PrevDecl) {
+        IsRedeclarationIllegal = CheckRedeclaration(D, PrevDecl);
+    }
+
+    if (IsRedeclarationIllegal) {
+        D->setInvalid(true); // Mark the new declaration as invalid
+        std::cerr << "Sema: Declining to register illegal redeclaration '" << D->getName() << "'." << std::endl;
+        return; // Do not proceed to add to Scope or DeclContext lookup structures
+    }
+
+    // If legal (or no previous decl), proceed with registration:
+
+    // 3. Set the intrusive link on the new declaration.
+    D->PreviousDeclInContext = PrevDecl;
+
+    
     // Always add to the provided lexical scope for basic visibility.
-    S->addDecl(D);
+    if (S) S->addDecl(D);
 
     // Now, decide if it should *also* be added to the DeclContext's permanent map.
     DeclContext* OwningDC = D->getOwningDeclContext();
@@ -89,11 +122,11 @@ void Sema::PushOnScopeChains(NamedDecl* D, Scope* S) {
     switch (OwningDC->getDeclContextKind()) {
     case DeclContextKind::TranslationUnit:
     case DeclContextKind::Namespace:
-        OwningDC->addDeclInternal(D);
+        OwningDC->addNamedDeclToLookupMap(D);
         break;
 
     case DeclContextKind::Record:
-        OwningDC->addDeclInternal(D);
+        OwningDC->addNamedDeclToLookupMap(D);
         break;
 
     case DeclContextKind::Function:
@@ -111,7 +144,7 @@ void Sema::PushOnScopeChains(NamedDecl* D, Scope* S) {
             D->getKind() == Decl::Kind::Enum ||
             D->getKind() == Decl::Kind::Function ||
             D->getKind() == Decl::Kind::CXXMethod) {
-            OwningDC->addDeclInternal(D);
+            OwningDC->addNamedDeclToLookupMap(D);
         }
         break;
     default:

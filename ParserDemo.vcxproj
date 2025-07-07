@@ -158,6 +158,7 @@
     <ClInclude Include="include\AST\ASTStmt.hpp" />
     <ClInclude Include="include\AST\ASTType.hpp" />
     <ClInclude Include="include\AST\DeclContext.hpp" />
+    <ClInclude Include="include\AST\Redeclarable.hpp" />
     <ClInclude Include="include\Basic.hpp" />
     <ClInclude Include="include\ForwardDeclarations.hpp" />
     <ClInclude Include="include\Lexer\IdentifierInfo.hpp" />
