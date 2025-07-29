@@ -941,6 +941,17 @@ void ASTStmtWriter::VisitParenListExpr(ParenListExpr *E) {
   Code = serialization::EXPR_PAREN_LIST;
 }
 
+void ASTStmtWriter::VisitCXXDelayedParsedExpr(CXXDelayedParsedExpr* E)
+{
+  VisitExpr(E);
+  Record.AddSourceLocation(E->getBeginLoc());
+  Record.AddStmt(E->getBody());
+  Record.AddSourceLocation(E->getEndLoc());
+
+
+  Code = serialization::EXPR_CXXDELAYED_PARSED;
+}
+
 void ASTStmtWriter::VisitUnaryOperator(UnaryOperator *E) {
   VisitExpr(E);
   bool HasFPFeatures = E->hasStoredFPFeatures();

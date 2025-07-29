@@ -2385,6 +2385,11 @@ void StmtProfiler::VisitCXXSpliceExpr(const CXXSpliceExpr *E) {
   VisitExpr(E);
 }
 
+void StmtProfiler::VisitCXXDelayedParsedExpr(const CXXDelayedParsedExpr *E) {
+  //TODO(D0000): Captures change the picture
+  VisitExpr(E);
+}
+
 void StmtProfiler::VisitCXXDependentMemberSpliceExpr(
                                         const CXXDependentMemberSpliceExpr *E) {
   VisitExpr(E);

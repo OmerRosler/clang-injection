@@ -872,6 +872,18 @@ ExprDependence clang::computeDependence(LambdaExpr *E,
   return D;
 }
 
+ExprDependence clang::computeDependence(CXXDelayedParsedExpr *E,
+                                        bool ContainsUnexpandedParameterPack) {
+  auto D = toExprDependenceForImpliedType(E->getType()->getDependence());
+  // TODO(D0000): Instead of hard-code the computing, we add the dependent NTTPs beforehand
+  D |= ExprDependence::Instantiation;
+  D |= ExprDependence::Value;
+  D &= ~ExprDependence::Type;
+  if (ContainsUnexpandedParameterPack)
+    D |= ExprDependence::UnexpandedPack;
+  return D;
+}
+
 ExprDependence clang::computeDependence(CXXUnresolvedConstructExpr *E) {
   auto D = ExprDependence::ValueInstantiation;
   D |= toExprDependenceAsWritten(E->getTypeAsWritten()->getDependence());

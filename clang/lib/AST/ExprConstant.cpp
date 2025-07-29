@@ -16906,6 +16906,9 @@ public:
   bool VisitCXXReflectExpr(const CXXReflectExpr *E);
   bool VisitCXXMetafunctionExpr(const CXXMetafunctionExpr *E);
   bool VisitCXXSpliceExpr(const CXXSpliceExpr *E);
+
+  //TODO(D0000): Move to the right place
+  bool VisitCXXDelayedParsedExpr(const CXXDelayedParsedExpr *E);
 };
 
 bool ReflectionEvaluator::VisitCXXReflectExpr(const CXXReflectExpr *E) {
@@ -16920,6 +16923,11 @@ bool ReflectionEvaluator::VisitCXXMetafunctionExpr(
 
 bool ReflectionEvaluator::VisitCXXSpliceExpr(const CXXSpliceExpr *E) {
   return BaseType::VisitCXXSpliceExpr(E);
+}
+
+bool ReflectionEvaluator::VisitCXXDelayedParsedExpr(
+    const CXXDelayedParsedExpr *E) {
+  return BaseType::VisitCXXDelayedParsedExpr(E);
 }
 }  // end anonymous namespace
 

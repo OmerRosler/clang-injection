@@ -78,6 +78,7 @@ class CXXTemporaryObjectExpr;
 class CXXDefaultInitExpr;
 class CXXDefaultArgExpr;
 class LambdaExpr;
+class CXXDelayedParsedExpr;
 class CXXUnresolvedConstructExpr;
 class CXXDependentScopeMemberExpr;
 class MaterializeTemporaryExpr;
@@ -182,6 +183,8 @@ ExprDependence computeDependence(CXXTemporaryObjectExpr *E);
 ExprDependence computeDependence(CXXDefaultInitExpr *E);
 ExprDependence computeDependence(CXXDefaultArgExpr *E);
 ExprDependence computeDependence(LambdaExpr *E,
+                                 bool ContainsUnexpandedParameterPack);
+ExprDependence computeDependence(CXXDelayedParsedExpr *E,
                                  bool ContainsUnexpandedParameterPack);
 ExprDependence computeDependence(CXXUnresolvedConstructExpr *E);
 ExprDependence computeDependence(CXXDependentScopeMemberExpr *E);

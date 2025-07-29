@@ -1420,6 +1420,7 @@ Sema::BuildSpliceSpecifier(SourceLocation LSpliceLoc, Expr *Operand,
   auto Dep = toSpliceSpecifierDependence(Operand->getDependence());
   if (Dep == SpliceSpecifierDependence::None &&
       Operand->getType() != Context.MetaInfoTy) {
+    // TODO(D0000): Remove ad-hoc here and perform overload resolution with my new type
     Result = PerformImplicitConversion(Operand, Context.MetaInfoTy,
                                        AssignmentAction::Converting, false);
     if (Result.isInvalid())
@@ -1528,6 +1529,16 @@ QualType Sema::BuildReflectionSpliceTypeLoc(TypeLocBuilder &TLB,
   TLB.push<ReflectionSpliceTypeLoc>(SpliceTy);
 
   return SpliceTy;
+}
+
+ExprResult Sema::ActOnCXXDelayedParsedExpr(CXXRecordDecl *Class, 
+    UserDefinedLiteral *Body,
+      SourceLocation IntroducerLoc, SourceLocation EndLoc,
+                       bool ContainsUnexpandedParameterPack)
+{
+  return CXXDelayedParsedExpr::Create(Context, Class, Body,
+                                      IntroducerLoc, EndLoc,
+                                      ContainsUnexpandedParameterPack);
 }
 
 ExprResult Sema::BuildReflectionSpliceExpr(SourceLocation TemplateKWLoc,

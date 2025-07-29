@@ -16033,6 +16033,14 @@ TreeTransform<Derived>::TransformCXXTemporaryObjectExpr(
 
 template<typename Derived>
 ExprResult
+TreeTransform<Derived>::TransformCXXDelayedParsedExpr(CXXDelayedParsedExpr *E)
+{
+    //TODO(D0000): Pass the caller parameters here
+    return E;
+}
+
+template<typename Derived>
+ExprResult
 TreeTransform<Derived>::TransformLambdaExpr(LambdaExpr *E) {
   // Transform any init-capture expressions before entering the scope of the
   // lambda body, because they are not semantically within that scope.
@@ -16447,6 +16455,8 @@ TreeTransform<Derived>::TransformLambdaExpr(LambdaExpr *E) {
   return getDerived().RebuildLambdaExpr(E->getBeginLoc(),
                                         Body.get()->getEndLoc(), &LSICopy);
 }
+
+
 
 template<typename Derived>
 StmtResult

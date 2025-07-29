@@ -5174,6 +5174,8 @@ recurse:
   case Expr::CXXMetafunctionExprClass:
   case Expr::CXXSpliceExprClass:
   case Expr::CXXDependentMemberSpliceExprClass:
+  //TODO(D0000): The expression should be mangaled exactly like a lambda, the body should be mangaled like a literal
+  case Expr::CXXDelayedParsedExprClass:
   case Expr::StackLocationExprClass:
   case Expr::ExtractLValueExprClass:
   case Expr::PackIndexingExprClass:

@@ -539,6 +539,23 @@ void ASTStmtReader::VisitCXXDependentMemberSpliceExpr(
   E->setRHS(cast<CXXSpliceExpr>(Record.readExpr()));
 }
 
+
+void ASTStmtReader::VisitCXXDelayedParsedExpr(CXXDelayedParsedExpr *E) {
+  //TODO(D0000): Implement this
+  VisitExpr(E);
+  //read start token location
+  E->setBeginLoc(Record.readSourceLocation());
+  //TODO(D0000): Add captures
+  //  read body as a string literal
+  // TODO(D000): Replace the string literal with actual token stream
+  Expr *BodyExpr = Record.readExpr();
+  E->setBody(cast<UserDefinedLiteral>(BodyExpr));
+  //read end token location
+  E->setEndLoc(Record.readSourceLocation());
+  E->setType(Record.readType());
+}
+
+
 void ASTStmtReader::VisitStackLocationExpr(StackLocationExpr *E) {
   llvm_unreachable("unimplemented");
 }
@@ -4611,6 +4628,10 @@ Stmt *ASTReader::ReadStmtFromStream(ModuleFile &F) {
     }
     case EXPR_DEPENDENT_MEMBER_SPLICE: {
       S = CXXDependentMemberSpliceExpr::CreateEmpty(Context);
+      break;
+    }
+    case EXPR_CXXDELAYED_PARSED: {
+      S = CXXDelayedParsedExpr::CreateEmpty(Context);
       break;
     }
     }

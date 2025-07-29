@@ -2177,6 +2177,66 @@ public:
   const_child_range children() const;
 };
 
+class CXXDelayedParsedExpr final : public Expr {
+    // The context parameters
+    //TemplateParameterList *ImplicitTemplateParams = nullptr;
+
+   // TODO(D0000): Replace with token stream and parser state
+   // This object is always UserDefinedLiteral* for now
+    Stmt *BodyUDLLiteral;
+
+    // TODO(D0000): Add captures and preemptive replacement? maybe hack it using the replacement mechanism of macros?
+
+    SourceLocation TokenSequencceStartLoc;
+    SourceLocation TokenSequencceEndLoc;
+
+protected:
+    CXXDelayedParsedExpr(EmptyShell);
+
+public:
+    CXXDelayedParsedExpr(QualType T, UserDefinedLiteral *BodyLiteral,
+                       SourceLocation TokenSequencceStartLoc,
+                       SourceLocation TokenSequencceEndLoc,
+                       bool ContainsUnexpandedParameterPack);
+
+  static CXXDelayedParsedExpr *CreateEmpty(const ASTContext &Ctx);
+  
+  static CXXDelayedParsedExpr *Create(const ASTContext &C, 
+         CXXRecordDecl *Class,
+         UserDefinedLiteral *BodyLiteral,
+         SourceLocation TokenSequencceStartLoc,
+         SourceLocation TokenSequencceEndLoc,
+         bool ContainsUnexpandedParameterPack);
+  /// Construct a new lambda expression that will be deserialized from
+  /// an external source.
+  static CXXDelayedParsedExpr *CreateDeserialized(const ASTContext &C);
+
+  CXXRecordDecl *getClosureClass() const;
+
+  SourceLocation getBeginLoc() const;
+  SourceLocation getEndLoc() const;
+
+  void setBeginLoc(SourceLocation StartLoc);
+  void setEndLoc(SourceLocation EndLoc);
+
+  UserDefinedLiteral *getBody() const {
+    return cast<UserDefinedLiteral *>(*BodyUDLLiteral);
+  }
+
+  void setBody(Stmt* Body)
+  {
+
+      BodyUDLLiteral = Body;
+  }
+
+  static bool classof(const Stmt* T)
+  {
+    return T->getStmtClass() == CXXDelayedParsedExprClass;
+  }
+
+  child_range children();
+};
+
 /// An expression "T()" which creates an rvalue of a non-class type T.
 /// For non-void T, the rvalue is value-initialized.
 /// See (C++98 [5.2.3p2]).

@@ -1,0 +1,15 @@
+172>C:\Users\jewis\Documents\reflection_stuff\clang-p2996\clang\lib\AST\ExprConstant.cpp(18036,3): warning C4062: enumerator 'clang::Stmt::CXXDelayedParsedExprClass' in switch of enum 'clang::Stmt::StmtClass' is not handled
+
+175>C:\Users\jewis\Documents\reflection_stuff\clang-p2996\build\tools\clang\include\clang\AST\StmtNodes.inc(814,1): warning C5046: 'clang::RecursiveASTVisitor<clang::ast_matchers::internal::`anonymous-namespace'::MatchChildASTVisitor>::TraverseCXXDelayedParsedExpr': Symbol involving type with internal linkage not defined
+175>(compiling source file '../../../../../clang/lib/ASTMatchers/ASTMatchFinder.cpp')
+175>C:\Users\jewis\Documents\reflection_stuff\clang-p2996\build\tools\clang\include\clang\AST\StmtNodes.inc(814,1): warning C5046: 'clang::RecursiveASTVisitor<clang::ast_matchers::internal::`anonymous-namespace'::MatchASTVisitor>::TraverseCXXDelayedParsedExpr': Symbol involving type with internal linkage not defined
+175>(compiling source file '../../../../../clang/lib/ASTMatchers/ASTMatchFinder.cpp')
+277>C:\Users\jewis\Documents\reflection_stuff\clang-p2996\build\tools\clang\include\clang\AST\StmtNodes.inc(814,1): warning C5046: 'clang::RecursiveASTVisitor<clang::diff::`anonymous-namespace'::PreorderVisitor>::TraverseCXXDelayedParsedExpr': Symbol involving type with internal linkage not defined
+277>(compiling source file '../../../../../../clang/lib/Tooling/ASTDiff/ASTDiff.cpp')
+286>PrecompiledPreamble.cpp
+
+286>C:\Users\jewis\Documents\reflection_stuff\clang-p2996\build\tools\clang\include\clang\AST\StmtNodes.inc(814,1): warning C5046: 'clang::RecursiveASTVisitor<`anonymous-namespace'::InterfaceStubFunctionsConsumer::HandleTranslationUnit::Visitor>::TraverseCXXDelayedParsedExpr': Symbol involving type with internal linkage not defined
+286>(compiling source file '../../../../../clang/lib/Frontend/InterfaceStubFunctionsConsumer.cpp')
+
+288>C:\Users\jewis\Documents\reflection_stuff\clang-p2996\build\tools\clang\include\clang\AST\StmtNodes.inc(814,1): warning C5046: 'clang::RecursiveASTVisitor<`anonymous-namespace'::BuildTreeVisitor>::TraverseCXXDelayedParsedExpr': Symbol involving type with internal linkage not defined
+288>(compiling source file '../../../clang/lib/Tooling/Syntax/BuildTree.cpp')

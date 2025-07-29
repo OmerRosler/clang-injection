@@ -674,6 +674,7 @@ namespace clang {
     ExpectedStmt VisitMemberExpr(MemberExpr *E);
     ExpectedStmt VisitCallExpr(CallExpr *E);
     ExpectedStmt VisitLambdaExpr(LambdaExpr *LE);
+    //ExpectedStmt VisitCXXDelayedParsedExpr(CXXDelayedParsedExpr *LE);
     ExpectedStmt VisitInitListExpr(InitListExpr *E);
     ExpectedStmt VisitCXXStdInitializerListExpr(CXXStdInitializerListExpr *E);
     ExpectedStmt VisitCXXInheritedCtorInitExpr(CXXInheritedCtorInitExpr *E);
@@ -8833,6 +8834,12 @@ ExpectedStmt ASTNodeImporter::VisitCallExpr(CallExpr *E) {
                           E->getValueKind(), ToRParenLoc, E->getFPFeatures(),
                           /*MinNumArgs=*/0, E->getADLCallKind());
 }
+
+// TODO(D0000): Truly write the importing logic
+//ExpectedStmt
+//ASTNodeImporter::VisitCXXDelayedParsedExpr(CXXDelayedParsedExpr *E) {
+//
+//}
 
 ExpectedStmt ASTNodeImporter::VisitLambdaExpr(LambdaExpr *E) {
   CXXRecordDecl *FromClass = E->getLambdaClass();

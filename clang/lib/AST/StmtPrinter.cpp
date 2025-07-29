@@ -2445,6 +2445,13 @@ void StmtPrinter::VisitLambdaExpr(LambdaExpr *Node) {
     PrintRawCompoundStmt(Node->getCompoundStmtBody());
 }
 
+void StmtPrinter::VisitCXXDelayedParsedExpr(CXXDelayedParsedExpr* Node)
+{
+  OS << "^^{ ";
+  PrintExpr(Node->getBody());
+  OS << "}";
+}
+
 void StmtPrinter::VisitCXXScalarValueInitExpr(CXXScalarValueInitExpr *Node) {
   if (TypeSourceInfo *TSInfo = Node->getTypeSourceInfo())
     TSInfo->getType().print(OS, Policy);

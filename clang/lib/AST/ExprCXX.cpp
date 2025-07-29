@@ -1427,6 +1427,79 @@ LambdaExpr::const_child_range LambdaExpr::children() const {
                            getStoredStmts() + capture_size() + 1);
 }
 
+CXXDelayedParsedExpr::CXXDelayedParsedExpr(QualType T,
+                                           UserDefinedLiteral *BodyLiteral,
+                                           SourceLocation StartLoc,
+                                           SourceLocation EndLoc,
+                                           bool ContainsUnexpandedParameterPack)
+    : Expr(CXXDelayedParsedExprClass, T, VK_PRValue, OK_Ordinary),
+      BodyUDLLiteral(BodyLiteral), 
+        TokenSequencceStartLoc(StartLoc), 
+        TokenSequencceEndLoc(EndLoc) {
+    setDependence(computeDependence(this, ContainsUnexpandedParameterPack));
+}
+
+
+CXXDelayedParsedExpr::CXXDelayedParsedExpr(EmptyShell Empty)
+    : Expr(CXXDelayedParsedExprClass, Empty) {}
+
+CXXDelayedParsedExpr *CXXDelayedParsedExpr::CreateEmpty(const ASTContext &Ctx) {
+    return new (Ctx) CXXDelayedParsedExpr(EmptyShell());
+}
+
+
+CXXDelayedParsedExpr *
+CXXDelayedParsedExpr::Create(const ASTContext &C, 
+                             CXXRecordDecl *Class,
+                             UserDefinedLiteral *BodyLiteral,
+                             SourceLocation StartLoc,
+                             SourceLocation EndLoc,
+                             bool ContainsUnexpandedParameterPack) {
+    QualType T = C.getTypeDeclType(Class);
+    return new (C) CXXDelayedParsedExpr(T, BodyLiteral, StartLoc, EndLoc,
+                             ContainsUnexpandedParameterPack);
+
+};
+
+CXXDelayedParsedExpr *
+CXXDelayedParsedExpr::CreateDeserialized(const ASTContext& C)
+{
+    //TODO(D0000): When we add captures, we need to allocate them here
+    //unsigned Size = totalSizeToAlloc<Stmt *>(num_captures + 1);
+    //void *Mem = C.Allocate(Size);
+    return new (C) CXXDelayedParsedExpr(EmptyShell());
+}
+
+CXXRecordDecl *CXXDelayedParsedExpr::getClosureClass() const {
+    return getType()->getAsCXXRecordDecl();
+}
+
+SourceLocation CXXDelayedParsedExpr::getBeginLoc() const {
+    return TokenSequencceStartLoc;
+}
+SourceLocation CXXDelayedParsedExpr::getEndLoc() const {
+    return TokenSequencceEndLoc;
+}
+
+void CXXDelayedParsedExpr::setBeginLoc(SourceLocation StartLoc)
+{
+    TokenSequencceStartLoc = StartLoc;
+}
+void CXXDelayedParsedExpr::setEndLoc(SourceLocation EndLoc)
+{
+    TokenSequencceEndLoc = EndLoc;
+}
+
+CXXDelayedParsedExpr::child_range CXXDelayedParsedExpr::children() {
+  return child_range(&BodyUDLLiteral, &BodyUDLLiteral + 1);
+}
+
+
+
+
+
+
+
 ExprWithCleanups::ExprWithCleanups(Expr *subexpr,
                                    bool CleanupsHaveSideEffects,
                                    ArrayRef<CleanupObject> objects)
