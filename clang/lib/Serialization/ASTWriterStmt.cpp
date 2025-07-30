@@ -944,10 +944,9 @@ void ASTStmtWriter::VisitParenListExpr(ParenListExpr *E) {
 void ASTStmtWriter::VisitCXXDelayedParsedExpr(CXXDelayedParsedExpr* E)
 {
   VisitExpr(E);
-  Record.AddSourceLocation(E->getBeginLoc());
-  Record.AddStmt(E->getBody());
-  Record.AddSourceLocation(E->getEndLoc());
 
+  Record.AddStmt(E->getParseFn());
+  Record.AddStmt(E->getBody());
 
   Code = serialization::EXPR_CXXDELAYED_PARSED;
 }

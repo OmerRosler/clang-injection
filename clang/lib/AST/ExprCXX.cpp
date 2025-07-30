@@ -1429,44 +1429,58 @@ LambdaExpr::const_child_range LambdaExpr::children() const {
 
 CXXDelayedParsedExpr::CXXDelayedParsedExpr(QualType T,
                                            UserDefinedLiteral *BodyLiteral,
-                                           SourceLocation StartLoc,
-                                           SourceLocation EndLoc,
+                                           LambdaExpr *ParseFunction,
                                            bool ContainsUnexpandedParameterPack)
     : Expr(CXXDelayedParsedExprClass, T, VK_PRValue, OK_Ordinary),
       BodyUDLLiteral(BodyLiteral), 
-        TokenSequencceStartLoc(StartLoc), 
-        TokenSequencceEndLoc(EndLoc) {
+      ParseFunction(ParseFunction) {
     setDependence(computeDependence(this, ContainsUnexpandedParameterPack));
 }
 
 
 CXXDelayedParsedExpr::CXXDelayedParsedExpr(EmptyShell Empty)
-    : Expr(CXXDelayedParsedExprClass, Empty) {}
-
-CXXDelayedParsedExpr *CXXDelayedParsedExpr::CreateEmpty(const ASTContext &Ctx) {
-    return new (Ctx) CXXDelayedParsedExpr(EmptyShell());
-}
+    : Expr(CXXDelayedParsedExprClass, Empty),
+    BodyUDLLiteral(nullptr),
+    ParseFunction(nullptr) {}
 
 
 CXXDelayedParsedExpr *
 CXXDelayedParsedExpr::Create(const ASTContext &C, 
                              CXXRecordDecl *Class,
                              UserDefinedLiteral *BodyLiteral,
-                             SourceLocation StartLoc,
-                             SourceLocation EndLoc,
-                             bool ContainsUnexpandedParameterPack) {
+                             SourceRange IntroducerRange, 
+                             LambdaCaptureDefault CaptureDefault,
+                             SourceLocation CaptureDefaultLoc, 
+    bool ExplicitParams,
+    bool ExplicitResultType, 
+    ArrayRef<Expr *> CaptureInits,
+    SourceLocation ClosingBrace, 
+    bool ContainsUnexpandedParameterPack) {
+    //TODO (D0000): This is a hack, we reuse the type of the lambda as the type of our node
+    // It won't work with Sema. It does work with ConstantEvaluator.
     QualType T = C.getTypeDeclType(Class);
-    return new (C) CXXDelayedParsedExpr(T, BodyLiteral, StartLoc, EndLoc,
+    LambdaExpr *lambda = LambdaExpr::Create(
+        C, Class, IntroducerRange, CaptureDefault, CaptureDefaultLoc,
+        ExplicitParams, ExplicitResultType, CaptureInits, ClosingBrace,
+        ContainsUnexpandedParameterPack);
+    return new (C) CXXDelayedParsedExpr(T, BodyLiteral, lambda,
                              ContainsUnexpandedParameterPack);
 
 };
 
+CXXDelayedParsedExpr* CXXDelayedParsedExpr::CreateFromLambda(
+    const ASTContext& Ctx, UserDefinedLiteral* BodyLiteral,
+    LambdaExpr* ParseFunction,
+    bool ContainsUnexpandedParameterPack)
+{
+    return new (Ctx)
+        CXXDelayedParsedExpr(ParseFunction->getType(), BodyLiteral,
+                             ParseFunction, ContainsUnexpandedParameterPack);
+}
+
 CXXDelayedParsedExpr *
 CXXDelayedParsedExpr::CreateDeserialized(const ASTContext& C)
 {
-    //TODO(D0000): When we add captures, we need to allocate them here
-    //unsigned Size = totalSizeToAlloc<Stmt *>(num_captures + 1);
-    //void *Mem = C.Allocate(Size);
     return new (C) CXXDelayedParsedExpr(EmptyShell());
 }
 
@@ -1475,23 +1489,32 @@ CXXRecordDecl *CXXDelayedParsedExpr::getClosureClass() const {
 }
 
 SourceLocation CXXDelayedParsedExpr::getBeginLoc() const {
-    return TokenSequencceStartLoc;
+    return ParseFunction->getBeginLoc();
 }
 SourceLocation CXXDelayedParsedExpr::getEndLoc() const {
-    return TokenSequencceEndLoc;
+    return ParseFunction->getEndLoc();
 }
 
-void CXXDelayedParsedExpr::setBeginLoc(SourceLocation StartLoc)
+LambdaExpr* CXXDelayedParsedExpr::getParseFn() const
 {
-    TokenSequencceStartLoc = StartLoc;
+    return cast<LambdaExpr>(ParseFunction);
 }
-void CXXDelayedParsedExpr::setEndLoc(SourceLocation EndLoc)
-{
-    TokenSequencceEndLoc = EndLoc;
+void CXXDelayedParsedExpr::setParseFn(LambdaExpr* fn)
+{ 
+    ParseFunction = fn;
 }
+
+//void CXXDelayedParsedExpr::setBeginLoc(SourceLocation StartLoc)
+//{
+//    TokenSequencceStartLoc = StartLoc;
+//}
+//void CXXDelayedParsedExpr::setEndLoc(SourceLocation EndLoc)
+//{
+//    TokenSequencceEndLoc = EndLoc;
+//}
 
 CXXDelayedParsedExpr::child_range CXXDelayedParsedExpr::children() {
-  return child_range(&BodyUDLLiteral, &BodyUDLLiteral + 1);
+    return child_range(&BodyUDLLiteral, &ParseFunction + 1);
 }
 
 

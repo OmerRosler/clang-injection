@@ -2185,39 +2185,45 @@ class CXXDelayedParsedExpr final : public Expr {
    // This object is always UserDefinedLiteral* for now
     Stmt *BodyUDLLiteral;
 
-    // TODO(D0000): Add captures and preemptive replacement? maybe hack it using the replacement mechanism of macros?
-
-    SourceLocation TokenSequencceStartLoc;
-    SourceLocation TokenSequencceEndLoc;
+    Stmt *ParseFunction;
 
 protected:
     CXXDelayedParsedExpr(EmptyShell);
 
 public:
-    CXXDelayedParsedExpr(QualType T, UserDefinedLiteral *BodyLiteral,
-                       SourceLocation TokenSequencceStartLoc,
-                       SourceLocation TokenSequencceEndLoc,
+    CXXDelayedParsedExpr(QualType T, 
+                       UserDefinedLiteral *BodyLiteral, 
+                       LambdaExpr* ParseFunction,
                        bool ContainsUnexpandedParameterPack);
 
-  static CXXDelayedParsedExpr *CreateEmpty(const ASTContext &Ctx);
+  static CXXDelayedParsedExpr *CreateDeserialized(const ASTContext &Ctx);
+
+  //TODO(D0000): Remove this. We should never create the lambda separately
+  static CXXDelayedParsedExpr *
+  CreateFromLambda(const ASTContext &Ctx, UserDefinedLiteral *BodyLiteral,
+                   LambdaExpr *ParseFunction,
+                   bool ContainsUnexpandedParameterPack);
   
-  static CXXDelayedParsedExpr *Create(const ASTContext &C, 
-         CXXRecordDecl *Class,
-         UserDefinedLiteral *BodyLiteral,
-         SourceLocation TokenSequencceStartLoc,
-         SourceLocation TokenSequencceEndLoc,
+  static CXXDelayedParsedExpr *
+  Create(const ASTContext &C, CXXRecordDecl *Class,
+         UserDefinedLiteral *BodyLiteral, SourceRange IntroducerRange,
+         LambdaCaptureDefault CaptureDefault, SourceLocation CaptureDefaultLoc,
+         bool ExplicitParams, bool ExplicitResultType,
+         ArrayRef<Expr *> CaptureInits, SourceLocation ClosingBrace,
          bool ContainsUnexpandedParameterPack);
   /// Construct a new lambda expression that will be deserialized from
   /// an external source.
-  static CXXDelayedParsedExpr *CreateDeserialized(const ASTContext &C);
 
   CXXRecordDecl *getClosureClass() const;
 
   SourceLocation getBeginLoc() const;
   SourceLocation getEndLoc() const;
 
-  void setBeginLoc(SourceLocation StartLoc);
-  void setEndLoc(SourceLocation EndLoc);
+  LambdaExpr *getParseFn() const;
+  void setParseFn(LambdaExpr *);
+
+  //void setBeginLoc(SourceLocation StartLoc);
+  //void setEndLoc(SourceLocation EndLoc);
 
   UserDefinedLiteral *getBody() const {
     return cast<UserDefinedLiteral *>(*BodyUDLLiteral);

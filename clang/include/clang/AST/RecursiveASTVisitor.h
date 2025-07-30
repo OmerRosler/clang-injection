@@ -3071,6 +3071,10 @@ DEF_TRAVERSE_STMT(CXXReflectExpr, {
     }
   }
 })
+DEF_TRAVERSE_STMT(CXXDelayedParsedExpr, {
+  TRY_TO(TraverseStmt(S->getBody()));
+  TRY_TO(TraverseStmt(S->getParseFn()));
+})
 DEF_TRAVERSE_STMT(CXXMetafunctionExpr, {})
 DEF_TRAVERSE_STMT(CXXSpliceExpr, {
   TRY_TO(TraverseSpliceSpecifier(S->getSplice()));

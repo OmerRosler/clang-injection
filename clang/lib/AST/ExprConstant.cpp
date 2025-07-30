@@ -11369,6 +11369,12 @@ public:
   bool VisitLambdaExpr(const LambdaExpr *E) {
     return VisitConstructExpr(E);
   }
+  bool VisitCXXDelayedParsedExpr(const CXXDelayedParsedExpr *E) {
+    //TODO(D0000): Right now we evaluate the literal and delegate to the lambda, 
+    // but once we remove the LambdaExpr and have a proper closure type, we'll remove this
+    VisitIgnoredValue(E->getBody());
+    return VisitLambdaExpr(E->getParseFn());
+  }
 };
 } // end anonymous namespace
 
@@ -16907,8 +16913,6 @@ public:
   bool VisitCXXMetafunctionExpr(const CXXMetafunctionExpr *E);
   bool VisitCXXSpliceExpr(const CXXSpliceExpr *E);
 
-  //TODO(D0000): Move to the right place
-  bool VisitCXXDelayedParsedExpr(const CXXDelayedParsedExpr *E);
 };
 
 bool ReflectionEvaluator::VisitCXXReflectExpr(const CXXReflectExpr *E) {
@@ -16923,11 +16927,6 @@ bool ReflectionEvaluator::VisitCXXMetafunctionExpr(
 
 bool ReflectionEvaluator::VisitCXXSpliceExpr(const CXXSpliceExpr *E) {
   return BaseType::VisitCXXSpliceExpr(E);
-}
-
-bool ReflectionEvaluator::VisitCXXDelayedParsedExpr(
-    const CXXDelayedParsedExpr *E) {
-  return BaseType::VisitCXXDelayedParsedExpr(E);
 }
 }  // end anonymous namespace
 
@@ -17697,6 +17696,7 @@ static ICEDiag CheckICE(const Expr* E, const ASTContext &Ctx) {
   case Expr::PseudoObjectExprClass:
   case Expr::AtomicExprClass:
   case Expr::LambdaExprClass:
+  case Expr::CXXDelayedParsedExprClass:
   case Expr::CXXFoldExprClass:
   case Expr::CoawaitExprClass:
   case Expr::DependentCoawaitExprClass:

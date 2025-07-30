@@ -674,7 +674,7 @@ namespace clang {
     ExpectedStmt VisitMemberExpr(MemberExpr *E);
     ExpectedStmt VisitCallExpr(CallExpr *E);
     ExpectedStmt VisitLambdaExpr(LambdaExpr *LE);
-    //ExpectedStmt VisitCXXDelayedParsedExpr(CXXDelayedParsedExpr *LE);
+    ExpectedStmt VisitCXXDelayedParsedExpr(CXXDelayedParsedExpr *LE);
     ExpectedStmt VisitInitListExpr(InitListExpr *E);
     ExpectedStmt VisitCXXStdInitializerListExpr(CXXStdInitializerListExpr *E);
     ExpectedStmt VisitCXXInheritedCtorInitExpr(CXXInheritedCtorInitExpr *E);
@@ -8835,11 +8835,23 @@ ExpectedStmt ASTNodeImporter::VisitCallExpr(CallExpr *E) {
                           /*MinNumArgs=*/0, E->getADLCallKind());
 }
 
-// TODO(D0000): Truly write the importing logic
-//ExpectedStmt
-//ASTNodeImporter::VisitCXXDelayedParsedExpr(CXXDelayedParsedExpr *E) {
-//
-//}
+ExpectedStmt
+ASTNodeImporter::VisitCXXDelayedParsedExpr(CXXDelayedParsedExpr *E) {
+  // TODO(D0000): We definely should not use "CreateFromLambda" which is not clang idiomatic
+  // if the object holds its own captures, we will reuse the logic from there
+  auto toLiteralOrErr = import(E->getBody());
+  if (!toLiteralOrErr)
+    return toLiteralOrErr.takeError();
+  UserDefinedLiteral *ToLiteral = *toLiteralOrErr;
+  auto ToLambdaOrErr = import(E->getParseFn());
+  if (!ToLambdaOrErr)
+    return ToLambdaOrErr.takeError();
+  LambdaExpr *ToLambda = *ToLambdaOrErr;
+  return CXXDelayedParsedExpr::CreateFromLambda(
+      Importer.getToContext(), ToLiteral, ToLambda, 
+      E->containsUnexpandedParameterPack());
+
+}
 
 ExpectedStmt ASTNodeImporter::VisitLambdaExpr(LambdaExpr *E) {
   CXXRecordDecl *FromClass = E->getLambdaClass();

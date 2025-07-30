@@ -3662,7 +3662,6 @@ bool Expr::HasSideEffects(const ASTContext &Ctx,
   case CXXMetafunctionExprClass:
   case CXXSpliceExprClass:
   case CXXDependentMemberSpliceExprClass:
-  case CXXDelayedParsedExprClass:
   case StackLocationExprClass:
   case ExtractLValueExprClass:
   case CXXExpansionInitListExprClass:
@@ -3861,6 +3860,11 @@ bool Expr::HasSideEffects(const ASTContext &Ctx,
       if (E && E->HasSideEffects(Ctx, IncludePossibleEffects))
         return true;
     return false;
+  }
+  case CXXDelayedParsedExprClass: {
+    //TODO(D0000): Add logic related to captures
+    const CXXDelayedParsedExpr *DPE = cast<CXXDelayedParsedExpr>(this);
+    return DPE->getParseFn();
   }
 
   case PseudoObjectExprClass: {
