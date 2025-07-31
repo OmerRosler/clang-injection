@@ -3030,6 +3030,7 @@ DEF_TRAVERSE_STMT(SubstNonTypeTemplateParmExpr, {})
 DEF_TRAVERSE_STMT(FunctionParmPackExpr, {})
 DEF_TRAVERSE_STMT(CXXFoldExpr, {})
 DEF_TRAVERSE_STMT(AtomicExpr, {})
+DEF_TRAVERSE_STMT(CXXDelayedParsedExpr, {})
 DEF_TRAVERSE_STMT(CXXReflectExpr, {
   if (S->hasDependentSubExpr()) {
     TRY_TO(TraverseStmt(S->getDependentSubExpr()));
@@ -3070,10 +3071,6 @@ DEF_TRAVERSE_STMT(CXXReflectExpr, {
       break;
     }
   }
-})
-DEF_TRAVERSE_STMT(CXXDelayedParsedExpr, {
-  TRY_TO(TraverseStmt(S->getBody()));
-  TRY_TO(TraverseStmt(S->getParseFn()));
 })
 DEF_TRAVERSE_STMT(CXXMetafunctionExpr, {})
 DEF_TRAVERSE_STMT(CXXSpliceExpr, {
