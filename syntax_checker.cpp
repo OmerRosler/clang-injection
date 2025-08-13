@@ -1,1 +1,1 @@
-int x = a + b * c;
+auto x = ^^[]{"test_str";};

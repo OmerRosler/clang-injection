@@ -19,6 +19,40 @@
 #include "clang/Sema/EnterExpressionEvaluationContext.h"
 using namespace clang;
 
+ExprResult Parser::ParseCXXDelayedParsedExpression(SourceLocation OpLoc)  {
+  //parse as ^^[]{"body-text"_something}
+  //TODO: HACK: This is very wrong, because we can reflect a lambda. 
+  //Right now, we peek to see a lambda, and if we do, we do not parse it as lambda
+  assert(Tok.is(tok::l_brace));
+  // Parse lambda-introducer.
+  LambdaIntroducer Intro;
+  if (ParseLambdaIntroducer(Intro)) {
+    SkipUntil(tok::r_square, StopAtSemi);
+    SkipUntil(tok::l_brace, StopAtSemi);
+    SkipUntil(tok::r_brace, StopAtSemi);
+    return ExprError();
+  }
+
+  ExprResult EmptyLambdaOrErr = ParseLambdaExpressionAfterIntroducer(Intro);
+  if (EmptyLambdaOrErr.isInvalid())
+    return ExprError();
+
+  LambdaExpr* Lambda = EmptyLambdaOrErr.getAs<LambdaExpr>();
+
+  CompoundStmt* Body = Lambda->getCompoundStmtBody();
+  assert(!Body->body_empty());
+  auto first_stmt = Body->body_front();
+  if (!isa<ValueStmt>(first_stmt))
+    return ExprError();
+  auto literal = dyn_cast<ValueStmt>(first_stmt)->getExprStmt();
+  if (!isa<StringLiteral>(literal))
+    return ExprError();
+  //TODO: Is using the AST type the idiomatic way?
+  return Actions.ActOnCXXDelayedParsedExpr(Lambda, dyn_cast<StringLiteral>(literal), 
+    Lambda->containsUnexpandedParameterPack());
+
+}
+
 ExprResult Parser::ParseCXXReflectExpression(SourceLocation OpLoc) {
   SourceLocation OperandLoc = Tok.getLocation();
 

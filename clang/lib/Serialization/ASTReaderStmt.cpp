@@ -547,7 +547,7 @@ void ASTStmtReader::VisitCXXDelayedParsedExpr(CXXDelayedParsedExpr *E) {
   //  read body as a string literal
   // TODO(D000): Replace the string literal with actual token stream
   Expr *BodyExpr = Record.readExpr();
-  E->setBody(cast<UserDefinedLiteral>(BodyExpr));
+  E->setBody(cast<StringLiteral>(BodyExpr));
   //read end token location
   E->setParseFn(cast<LambdaExpr>(ParseFn));
 }

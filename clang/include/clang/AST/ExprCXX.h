@@ -2192,7 +2192,7 @@ protected:
 
 public:
     CXXDelayedParsedExpr(QualType T, 
-                       UserDefinedLiteral *BodyLiteral, 
+                       StringLiteral *BodyLiteral, 
                        LambdaExpr* ParseFunction,
                        bool ContainsUnexpandedParameterPack);
 
@@ -2200,13 +2200,13 @@ public:
 
   //TODO(D0000): Remove this. We should never create the lambda separately
   static CXXDelayedParsedExpr *
-  CreateFromLambda(const ASTContext &Ctx, UserDefinedLiteral *BodyLiteral,
+  CreateFromLambda(const ASTContext &Ctx, StringLiteral *BodyLiteral,
                    LambdaExpr *ParseFunction,
                    bool ContainsUnexpandedParameterPack);
   
   static CXXDelayedParsedExpr *
   Create(const ASTContext &C, CXXRecordDecl *Class,
-         UserDefinedLiteral *BodyLiteral, SourceRange IntroducerRange,
+         StringLiteral *BodyLiteral, SourceRange IntroducerRange,
          LambdaCaptureDefault CaptureDefault, SourceLocation CaptureDefaultLoc,
          bool ExplicitParams, bool ExplicitResultType,
          ArrayRef<Expr *> CaptureInits, SourceLocation ClosingBrace,
@@ -2225,8 +2225,8 @@ public:
   //void setBeginLoc(SourceLocation StartLoc);
   //void setEndLoc(SourceLocation EndLoc);
 
-  UserDefinedLiteral *getBody() const {
-    return cast<UserDefinedLiteral *>(*BodyUDLLiteral);
+  StringLiteral *getBody() const {
+    return cast<StringLiteral *>(*BodyUDLLiteral);
   }
 
   void setBody(Stmt* Body)

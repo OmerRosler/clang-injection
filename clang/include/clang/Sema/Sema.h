@@ -9165,11 +9165,15 @@ public:
 
   //TODO(D0000): Write this properly
   ExprResult ActOnCXXDelayedParsedExpr(
-      CXXRecordDecl *Class, UserDefinedLiteral *BodyLiteral,
+      CXXRecordDecl *Class, StringLiteral *BodyLiteral,
       SourceRange IntroducerRange, LambdaCaptureDefault CaptureDefault,
       SourceLocation CaptureDefaultLoc, bool ExplicitParams,
       bool ExplicitResultType, ArrayRef<Expr *> CaptureInits,
       SourceLocation ClosingBrace, bool ContainsUnexpandedParameterPack);
+
+  ExprResult ActOnCXXDelayedParsedExpr(LambdaExpr* Lambda, 
+    StringLiteral *BodyLiteral,
+    bool ContainsUnexpandedParameterPack);
 
   /// Does copying/destroying the captured variable have side effects?
   bool CaptureHasSideEffects(const sema::Capture &From);

@@ -1532,7 +1532,7 @@ QualType Sema::BuildReflectionSpliceTypeLoc(TypeLocBuilder &TLB,
 }
 
 ExprResult Sema::ActOnCXXDelayedParsedExpr(
-    CXXRecordDecl *Class, UserDefinedLiteral *BodyLiteral,
+    CXXRecordDecl *Class, StringLiteral *BodyLiteral,
     SourceRange IntroducerRange, LambdaCaptureDefault CaptureDefault,
     SourceLocation CaptureDefaultLoc, bool ExplicitParams,
     bool ExplicitResultType, ArrayRef<Expr *> CaptureInits,
@@ -1542,6 +1542,14 @@ ExprResult Sema::ActOnCXXDelayedParsedExpr(
       CaptureDefaultLoc,
       ExplicitParams, ExplicitResultType, CaptureInits, ClosingBrace,
       ContainsUnexpandedParameterPack);
+}
+
+
+ExprResult Sema::ActOnCXXDelayedParsedExpr(
+    LambdaExpr* Lambda, 
+    StringLiteral *BodyLiteral,
+    bool ContainsUnexpandedParameterPack) {
+      return CXXDelayedParsedExpr::CreateFromLambda(Context, BodyLiteral, Lambda, ContainsUnexpandedParameterPack);
 }
 
 ExprResult Sema::BuildReflectionSpliceExpr(SourceLocation TemplateKWLoc,

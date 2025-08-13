@@ -8842,7 +8842,7 @@ ASTNodeImporter::VisitCXXDelayedParsedExpr(CXXDelayedParsedExpr *E) {
   auto toLiteralOrErr = import(E->getBody());
   if (!toLiteralOrErr)
     return toLiteralOrErr.takeError();
-  UserDefinedLiteral *ToLiteral = *toLiteralOrErr;
+  StringLiteral *ToLiteral = *toLiteralOrErr;
   auto ToLambdaOrErr = import(E->getParseFn());
   if (!ToLambdaOrErr)
     return ToLambdaOrErr.takeError();

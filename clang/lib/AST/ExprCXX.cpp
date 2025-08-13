@@ -1428,7 +1428,7 @@ LambdaExpr::const_child_range LambdaExpr::children() const {
 }
 
 CXXDelayedParsedExpr::CXXDelayedParsedExpr(QualType T,
-                                           UserDefinedLiteral *BodyLiteral,
+                                           StringLiteral *BodyLiteral,
                                            LambdaExpr *ParseFunction,
                                            bool ContainsUnexpandedParameterPack)
     : Expr(CXXDelayedParsedExprClass, T, VK_PRValue, OK_Ordinary),
@@ -1447,7 +1447,7 @@ CXXDelayedParsedExpr::CXXDelayedParsedExpr(EmptyShell Empty)
 CXXDelayedParsedExpr *
 CXXDelayedParsedExpr::Create(const ASTContext &C, 
                              CXXRecordDecl *Class,
-                             UserDefinedLiteral *BodyLiteral,
+                             StringLiteral *BodyLiteral,
                              SourceRange IntroducerRange, 
                              LambdaCaptureDefault CaptureDefault,
                              SourceLocation CaptureDefaultLoc, 
@@ -1469,7 +1469,7 @@ CXXDelayedParsedExpr::Create(const ASTContext &C,
 };
 
 CXXDelayedParsedExpr* CXXDelayedParsedExpr::CreateFromLambda(
-    const ASTContext& Ctx, UserDefinedLiteral* BodyLiteral,
+    const ASTContext& Ctx, StringLiteral* BodyLiteral,
     LambdaExpr* ParseFunction,
     bool ContainsUnexpandedParameterPack)
 {
