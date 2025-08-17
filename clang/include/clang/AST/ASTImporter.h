@@ -47,6 +47,7 @@ class Stmt;
 class TagDecl;
 class TranslationUnitDecl;
 class TypeSourceInfo;
+class ASTToken;
 
   // \brief Returns with a list of declarations started from the canonical decl
   // then followed by subsequent decls in the translation unit.

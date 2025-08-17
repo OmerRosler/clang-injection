@@ -48,9 +48,9 @@ ExprResult Parser::ParseCXXDelayedParsedExpression(SourceLocation OpLoc)  {
   if (!isa<StringLiteral>(literal))
     return ExprError();
   //TODO: Is using the AST type the idiomatic way?
-  return Actions.ActOnCXXDelayedParsedExpr(Lambda, dyn_cast<StringLiteral>(literal), 
-    Lambda->containsUnexpandedParameterPack());
-
+  //return Actions.ActOnCXXDelayedParsedExpr(Lambda, dyn_cast<StringLiteral>(literal), 
+  //  Lambda->containsUnexpandedParameterPack());
+  return ExprError();
 }
 
 ExprResult Parser::ParseCXXReflectExpression(SourceLocation OpLoc) {

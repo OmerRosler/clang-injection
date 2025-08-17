@@ -33,6 +33,7 @@
 #include "clang/Basic/OperatorKinds.h"
 #include "clang/Basic/SourceLocation.h"
 #include "clang/Basic/Specifiers.h"
+#include "clang/Lex/Token.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/Support/ErrorHandling.h"
 #include <cassert>
@@ -1427,27 +1428,61 @@ LambdaExpr::const_child_range LambdaExpr::children() const {
                            getStoredStmts() + capture_size() + 1);
 }
 
-CXXDelayedParsedExpr::CXXDelayedParsedExpr(QualType T,
-                                           StringLiteral *BodyLiteral,
-                                           LambdaExpr *ParseFunction,
-                                           bool ContainsUnexpandedParameterPack)
-    : Expr(CXXDelayedParsedExprClass, T, VK_PRValue, OK_Ordinary),
-      BodyUDLLiteral(BodyLiteral), 
-      ParseFunction(ParseFunction) {
-    setDependence(computeDependence(this, ContainsUnexpandedParameterPack));
+
+ASTToken::ASTToken(const clang::Token &T)
+    : Kind(T.getKind()),
+    UintData(T.UintData),
+    PtrData(T.PtrData),
+    Flags(T.Flags) {
+  assert(!T.isAnnotation());
+}
+
+ASTToken::operator Token() const
+{
+  Token res{};
+  res.Kind = Kind;
+  res.UintData = UintData; 
+  res.PtrData = PtrData; 
+  res.Flags = Flags;
+  return res;
+}
+
+unsigned ASTToken::getLength() const {
+  assert(!isAnnotation() && "Annotation tokens have no length field");
+  return UintData;
+}
+
+std::string ASTToken::str() const {
+return std::string(tok::getTokenName(kind()));
 }
 
 
-CXXDelayedParsedExpr::CXXDelayedParsedExpr(EmptyShell Empty)
+CXXDelayedParsedExpr::CXXDelayedParsedExpr(QualType T,
+                                           ArrayRef<ASTToken> BodyTokens,
+                                           LambdaExpr *ParseFunction,
+                                           bool ContainsUnexpandedParameterPack)
+    : Expr(CXXDelayedParsedExprClass, T, VK_PRValue, OK_Ordinary),
+      ParseFunction(ParseFunction) {
+    
+    setDependence(computeDependence(this, ContainsUnexpandedParameterPack));
+    //copy the tokens into the body
+    std::copy(BodyTokens.begin(), BodyTokens.end(), this->BodyTokens);
+}
+
+
+CXXDelayedParsedExpr::CXXDelayedParsedExpr(EmptyShell Empty, unsigned NumTokens)
     : Expr(CXXDelayedParsedExprClass, Empty),
-    BodyUDLLiteral(nullptr),
-    ParseFunction(nullptr) {}
+    BodyTokens(nullptr),
+    ParseFunction(nullptr)
+{
+  this->NumTokens = NumTokens;
+}
 
 
 CXXDelayedParsedExpr *
 CXXDelayedParsedExpr::Create(const ASTContext &C, 
                              CXXRecordDecl *Class,
-                             StringLiteral *BodyLiteral,
+                             ArrayRef<ASTToken> BodyTokens,
                              SourceRange IntroducerRange, 
                              LambdaCaptureDefault CaptureDefault,
                              SourceLocation CaptureDefaultLoc, 
@@ -1463,25 +1498,33 @@ CXXDelayedParsedExpr::Create(const ASTContext &C,
         C, Class, IntroducerRange, CaptureDefault, CaptureDefaultLoc,
         ExplicitParams, ExplicitResultType, CaptureInits, ClosingBrace,
         ContainsUnexpandedParameterPack);
-    return new (C) CXXDelayedParsedExpr(T, BodyLiteral, lambda,
+    
+    unsigned Size = BodyTokens.size() * sizeof(Token) + sizeof(CXXDelayedParsedExpr);
+    void *Mem = C.Allocate(Size);
+    
+    return new (Mem) CXXDelayedParsedExpr(T, BodyTokens, lambda,
                              ContainsUnexpandedParameterPack);
 
 };
 
 CXXDelayedParsedExpr* CXXDelayedParsedExpr::CreateFromLambda(
-    const ASTContext& Ctx, StringLiteral* BodyLiteral,
+    const ASTContext& Ctx, ArrayRef<ASTToken> BodyTokens,
     LambdaExpr* ParseFunction,
     bool ContainsUnexpandedParameterPack)
 {
-    return new (Ctx)
-        CXXDelayedParsedExpr(ParseFunction->getType(), BodyLiteral,
+    unsigned Size = BodyTokens.size() * sizeof(ASTToken) + sizeof(CXXDelayedParsedExpr);
+    void *Mem = Ctx.Allocate(Size);
+    return new (Mem)
+        CXXDelayedParsedExpr(ParseFunction->getType(), BodyTokens,
                              ParseFunction, ContainsUnexpandedParameterPack);
 }
 
 CXXDelayedParsedExpr *
-CXXDelayedParsedExpr::CreateDeserialized(const ASTContext& C)
+CXXDelayedParsedExpr::CreateDeserialized(const ASTContext& C, unsigned NumTokens)
 {
-    return new (C) CXXDelayedParsedExpr(EmptyShell());
+    unsigned Size = NumTokens * sizeof(Token) + sizeof(CXXDelayedParsedExpr);
+    void *Mem = C.Allocate(Size);
+    return new (Mem) CXXDelayedParsedExpr(EmptyShell(), NumTokens);
 }
 
 CXXRecordDecl *CXXDelayedParsedExpr::getClosureClass() const {
@@ -1514,7 +1557,8 @@ void CXXDelayedParsedExpr::setParseFn(LambdaExpr* fn)
 //}
 
 CXXDelayedParsedExpr::child_range CXXDelayedParsedExpr::children() {
-    return child_range(&BodyUDLLiteral, &ParseFunction + 1);
+    //TODO: Make the literal a true AST type on its own and update this
+    return child_range(&ParseFunction, &ParseFunction + 1);
 }
 
 

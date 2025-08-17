@@ -66,6 +66,7 @@ namespace clang {
 class ASTContext;
 class DeclAccessPair;
 class IdentifierInfo;
+class Token;
 class LambdaCapture;
 class NonTypeTemplateParmDecl;
 class TemplateParameterList;
@@ -2177,36 +2178,94 @@ public:
   const_child_range children() const;
 };
 
-class CXXDelayedParsedExpr final : public Expr {
-    // The context parameters
-    //TemplateParameterList *ImplicitTemplateParams = nullptr;
 
-   // TODO(D0000): Replace with token stream and parser state
-   // This object is always UserDefinedLiteral* for now
-    Stmt *BodyUDLLiteral;
-
-    Stmt *ParseFunction;
-
-protected:
-    CXXDelayedParsedExpr(EmptyShell);
-
+/// Wrapper for the Token class of the Lexer
+// TODO(D0000): This is not a good representation for an already Lexed token. 
+// A better one would be a union on the ways to represent it in memory:
+// IdentifierInfo*, SourceRange, KindOnly, D0000 specific Annotations
+class ASTToken {
 public:
-    CXXDelayedParsedExpr(QualType T, 
-                       StringLiteral *BodyLiteral, 
+  /// EXPECTS: clang::Token is not an annotation token.
+  explicit ASTToken(const Token &T);
+  operator Token() const;
+
+  tok::TokenKind kind() const { return Kind; }
+
+  /// Return true if this is any of tok::annot_* kind tokens.
+  bool isAnnotation() const { return tok::isAnnotation(kind()); }
+
+  unsigned getLength() const;
+
+  std::string str() const;
+
+private:
+  /// Kind - The actual flavor of token this is.
+  tok::TokenKind Kind;
+
+  // Conceptually these next two fields could be in a union.  However, this
+  // causes gcc 4.2 to pessimize LexTokenInternal, a very performance critical
+  // routine. Keeping as separate members with casts until a more beautiful fix
+  // presents itself.
+
+  /// UintData - This holds either the length of the token text, when
+  /// a normal token, or the end of the SourceRange when an annotation
+  /// token.
+  SourceLocation::UIntTy UintData;
+  /// PtrData - This is a union of four different pointer types, which depends
+  /// on what type of token this is:
+  ///  Identifiers, keywords, etc:
+  ///    This is an IdentifierInfo*, which contains the uniqued identifier
+  ///    spelling.
+  ///  Literals:  isLiteral() returns true.
+  ///    This is a pointer to the start of the token in a text buffer, which
+  ///    may be dirty (have trigraphs / escaped newlines).
+  ///  Annotations (resolved type names, C++ scopes, etc): isAnnotation().
+  ///    This is a pointer to sema-specific data for the annotation token.
+  ///  Eof:
+  ///    This is a pointer to a Decl.
+  ///  Other:
+  ///    This is null.
+  void *PtrData;
+
+  /// Flags - Bits we track about this token, members of the TokenFlags enum.
+  unsigned short Flags;
+};
+
+class CXXDelayedParsedExpr final : public Expr {
+  // The context parameters
+  //TemplateParameterList *ImplicitTemplateParams = nullptr;
+
+  // TODO(D0000): Replace with token stream and parser state
+
+
+  
+  Stmt *ParseFunction;
+  
+  protected:
+  CXXDelayedParsedExpr(EmptyShell, unsigned NumCaptures);
+  
+  public:
+  //TODO: Make this private and use "bits" to get data from it
+  ASTToken *BodyTokens;
+  unsigned int NumTokens;
+
+  CXXDelayedParsedExpr(QualType T, 
+                       ArrayRef<ASTToken> BodyLiteral, 
                        LambdaExpr* ParseFunction,
                        bool ContainsUnexpandedParameterPack);
 
-  static CXXDelayedParsedExpr *CreateDeserialized(const ASTContext &Ctx);
+  static CXXDelayedParsedExpr *CreateDeserialized(const ASTContext &Ctx, unsigned NumTokens);
 
   //TODO(D0000): Remove this. We should never create the lambda separately
   static CXXDelayedParsedExpr *
-  CreateFromLambda(const ASTContext &Ctx, StringLiteral *BodyLiteral,
+  CreateFromLambda(const ASTContext &Ctx, ArrayRef<ASTToken> BodyTokens,
                    LambdaExpr *ParseFunction,
                    bool ContainsUnexpandedParameterPack);
   
   static CXXDelayedParsedExpr *
   Create(const ASTContext &C, CXXRecordDecl *Class,
-         StringLiteral *BodyLiteral, SourceRange IntroducerRange,
+         ArrayRef<ASTToken> BodyLiteral, 
+         SourceRange IntroducerRange,
          LambdaCaptureDefault CaptureDefault, SourceLocation CaptureDefaultLoc,
          bool ExplicitParams, bool ExplicitResultType,
          ArrayRef<Expr *> CaptureInits, SourceLocation ClosingBrace,
@@ -2225,15 +2284,19 @@ public:
   //void setBeginLoc(SourceLocation StartLoc);
   //void setEndLoc(SourceLocation EndLoc);
 
-  StringLiteral *getBody() const {
-    return cast<StringLiteral *>(*BodyUDLLiteral);
+  ASTToken *getBodyTokensBegin() const {
+    return BodyTokens;
   }
 
-  void setBody(Stmt* Body)
-  {
-
-      BodyUDLLiteral = Body;
+  ASTToken * getBodyTokensEnd() const {
+    return &BodyTokens[NumTokens];
   }
+
+  // void setBody(TokenStreamLiteral* Body)
+  // {
+
+  //     BodyLiteral = Body;
+  // }
 
   static bool classof(const Stmt* T)
   {

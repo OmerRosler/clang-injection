@@ -9165,14 +9165,14 @@ public:
 
   //TODO(D0000): Write this properly
   ExprResult ActOnCXXDelayedParsedExpr(
-      CXXRecordDecl *Class, StringLiteral *BodyLiteral,
+      CXXRecordDecl *Class, ArrayRef<ASTToken> BodyLiteral,
       SourceRange IntroducerRange, LambdaCaptureDefault CaptureDefault,
       SourceLocation CaptureDefaultLoc, bool ExplicitParams,
       bool ExplicitResultType, ArrayRef<Expr *> CaptureInits,
       SourceLocation ClosingBrace, bool ContainsUnexpandedParameterPack);
 
   ExprResult ActOnCXXDelayedParsedExpr(LambdaExpr* Lambda, 
-    StringLiteral *BodyLiteral,
+    ArrayRef<ASTToken> BodyLiteral,
     bool ContainsUnexpandedParameterPack);
 
   /// Does copying/destroying the captured variable have side effects?

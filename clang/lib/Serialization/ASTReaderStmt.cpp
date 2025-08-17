@@ -542,13 +542,16 @@ void ASTStmtReader::VisitCXXDependentMemberSpliceExpr(
 
 void ASTStmtReader::VisitCXXDelayedParsedExpr(CXXDelayedParsedExpr *E) {
   VisitExpr(E);
+  // read body
+  unsigned NumTokens = Record.readInt();
+  (void) NumTokens;
+  E->NumTokens = NumTokens;
+  for(unsigned i = 0; i< NumTokens; i++)
+  {
+    E->BodyTokens[i] = ASTToken(Record.readToken());
+  }
   //read parse function
   Expr *ParseFn = Record.readExpr();
-  //  read body as a string literal
-  // TODO(D000): Replace the string literal with actual token stream
-  Expr *BodyExpr = Record.readExpr();
-  E->setBody(cast<StringLiteral>(BodyExpr));
-  //read end token location
   E->setParseFn(cast<LambdaExpr>(ParseFn));
 }
 
@@ -4628,7 +4631,8 @@ Stmt *ASTReader::ReadStmtFromStream(ModuleFile &F) {
       break;
     }
     case EXPR_CXXDELAYED_PARSED: {
-      S = CXXDelayedParsedExpr::CreateDeserialized(Context);
+      unsigned NumTokens = Record[ASTStmtReader::NumExprFields];
+      S = CXXDelayedParsedExpr::CreateDeserialized(Context, NumTokens);
       break;
     }
     }

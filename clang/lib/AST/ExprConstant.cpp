@@ -11372,7 +11372,7 @@ public:
   bool VisitCXXDelayedParsedExpr(const CXXDelayedParsedExpr *E) {
     //TODO(D0000): Right now we evaluate the literal and delegate to the lambda, 
     // but once we remove the LambdaExpr and have a proper closure type, we'll remove this
-    VisitIgnoredValue(E->getBody());
+    //VisitIgnoredValue(E->getBody());
     return VisitLambdaExpr(E->getParseFn());
   }
 };

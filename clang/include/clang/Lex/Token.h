@@ -69,6 +69,8 @@ class Token {
   /// Flags - Bits we track about this token, members of the TokenFlags enum.
   unsigned short Flags;
 
+  friend class ASTToken;
+
 public:
   // Various flags set per token:
   enum TokenFlags {
