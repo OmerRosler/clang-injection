@@ -19,38 +19,33 @@
 #include "clang/Sema/EnterExpressionEvaluationContext.h"
 using namespace clang;
 
-ExprResult Parser::ParseCXXDelayedParsedExpression(SourceLocation OpLoc)  {
-  //parse as ^^[]{"body-text"_something}
-  //TODO: HACK: This is very wrong, because we can reflect a lambda. 
-  //Right now, we peek to see a lambda, and if we do, we do not parse it as lambda
+ExprResult Parser::ParseRawTokenSequence()
+{
+  //TODO(D0000): Right now only allow {}
   assert(Tok.is(tok::l_brace));
-  // Parse lambda-introducer.
-  LambdaIntroducer Intro;
-  if (ParseLambdaIntroducer(Intro)) {
-    SkipUntil(tok::r_square, StopAtSemi);
-    SkipUntil(tok::l_brace, StopAtSemi);
-    SkipUntil(tok::r_brace, StopAtSemi);
-    return ExprError();
-  }
+  BalancedDelimiterTracker Parens(*this, tok::l_brace);
+  return ExprError();
+}
 
-  ExprResult EmptyLambdaOrErr = ParseLambdaExpressionAfterIntroducer(Intro);
+ExprResult Parser::ParseCXXDelayedParsedExpression()  {
+  //parse as: blueprintexpr []{}{ token-sequence }
+  assert(Tok.is(tok::kw_blueprintexpr));
+  ConsumeToken();
+  //TODO(D0000): Create an empty lambda and just consume the tokens for now
+  // Parse lambda
+  ExprResult EmptyLambdaOrErr = ParseLambdaExpression();
   if (EmptyLambdaOrErr.isInvalid())
     return ExprError();
 
   LambdaExpr* Lambda = EmptyLambdaOrErr.getAs<LambdaExpr>();
 
-  CompoundStmt* Body = Lambda->getCompoundStmtBody();
-  assert(!Body->body_empty());
-  auto first_stmt = Body->body_front();
-  if (!isa<ValueStmt>(first_stmt))
-    return ExprError();
-  auto literal = dyn_cast<ValueStmt>(first_stmt)->getExprStmt();
-  if (!isa<StringLiteral>(literal))
-    return ExprError();
+  ExprResult TokSeq = ParseRawTokenSequence();
+
+  SmallVector<ASTToken, 16> tokens = {};
+  
   //TODO: Is using the AST type the idiomatic way?
-  //return Actions.ActOnCXXDelayedParsedExpr(Lambda, dyn_cast<StringLiteral>(literal), 
-  //  Lambda->containsUnexpandedParameterPack());
-  return ExprError();
+  return Actions.ActOnCXXDelayedParsedExpr(Lambda, tokens, 
+    Lambda->containsUnexpandedParameterPack());
 }
 
 ExprResult Parser::ParseCXXReflectExpression(SourceLocation OpLoc) {

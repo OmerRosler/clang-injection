@@ -8860,8 +8860,6 @@ ASTNodeImporter::VisitCXXDelayedParsedExpr(CXXDelayedParsedExpr *E) {
     // In these cases the token is a pointer to a SourceRange 
     case tok::unknown:
     case tok::comment:
-    // context-sensitive keywords
-    case tok::raw_identifier:
     //numeric literals
     case tok::numeric_constant:
     case tok::char_constant:
@@ -8907,6 +8905,8 @@ ASTNodeImporter::VisitCXXDelayedParsedExpr(CXXDelayedParsedExpr *E) {
     case tok::eof:
     // These are not never meant to be imported
     case tok::eod:
+    case tok::raw_identifier:
+    // TODO(D0000): Understand how to treat code completions
     case tok::code_completion:
       //TODO(D0000): We may need to special case some annotations here
       return make_error<ASTImportError>(ASTImportError::UnsupportedConstruct);

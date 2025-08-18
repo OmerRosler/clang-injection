@@ -1,1 +1,1 @@
-auto x = ^^[]{"test_str";};
+auto x = blueprintexpr []{} {"test_str";};

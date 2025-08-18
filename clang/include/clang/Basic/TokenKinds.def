@@ -440,6 +440,8 @@ CXX20_KEYWORD(requires              , 0)
 
 // C++2c reflection keywords.
 KEYWORD(__metafunction              , KEYREFLECT)
+// TODO(D0000): Use a different option to enable it
+KEYWORD(blueprintexpr                , KEYREFLECT)
 
 // Not a CXX20_KEYWORD because it is disabled by -fno-char8_t.
 KEYWORD(char8_t                     , CHAR8SUPPORT)

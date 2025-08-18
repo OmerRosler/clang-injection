@@ -8361,7 +8361,8 @@ private:
   ExprResult ParseCXXReflectExpression(SourceLocation OpLoc);
   ExprResult ParseCXXMetafunctionExpression();
   // C++2d: Injection [D0000]
-  ExprResult ParseCXXDelayedParsedExpression(SourceLocation OpLoc);
+  ExprResult ParseRawTokenSequence();
+  ExprResult ParseCXXDelayedParsedExpression();
 
   bool ParseSpliceSpecifier(bool TryParseSpecialization = false);
 

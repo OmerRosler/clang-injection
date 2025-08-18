@@ -1594,6 +1594,11 @@ ExprResult Parser::ParseCastExpression(CastParseKind ParseKind,
 
   case tok::kw___metafunction:
     return ParseCXXMetafunctionExpression();
+  case tok::kw_blueprintexpr:
+    if (NotPrimaryExpression)
+      *NotPrimaryExpression = true;
+    Res = ParseCXXDelayedParsedExpression();
+    break;
 
   case tok::at: {
     if (NotPrimaryExpression)
@@ -2340,11 +2345,7 @@ ExprResult Parser::ParseUnaryExprOrTypeTraitExpression() {
 
   if (OpTok.is(tok::caretcaret))
   {
-    //TODO (D0000): HACK: Peek to see if lambda and reuse parsing functions of lambda for this
-    if (Tok.is(tok::l_square))
-      return ParseCXXDelayedParsedExpression(OpTok.getLocation());
-    else
-      return ParseCXXReflectExpression(OpTok.getLocation());
+    return ParseCXXReflectExpression(OpTok.getLocation());
   }
 
   EnterExpressionEvaluationContext Unevaluated(
