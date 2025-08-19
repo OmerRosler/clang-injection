@@ -946,10 +946,11 @@ void ASTStmtWriter::VisitCXXDelayedParsedExpr(CXXDelayedParsedExpr* E)
 {
   VisitExpr(E);
   Record.push_back(E->NumTokens);
-  for (unsigned i = 0;i < E->NumTokens; i++)
-  {
-    Writer.AddToken(Token(E->BodyTokens[i]), Record.getRecordData());
-  }
+  std::for_each(E->getBodyTokensBegin(), E->getBodyTokensEnd(), 
+    [this](ASTToken& Tok)
+    {
+      Writer.AddToken(Tok, Record.getRecordData());
+    });
   Record.AddStmt(E->getParseFn());
 
   Code = serialization::EXPR_CXXDELAYED_PARSED;

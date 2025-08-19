@@ -8840,7 +8840,8 @@ ExpectedStmt
 ASTNodeImporter::VisitCXXDelayedParsedExpr(CXXDelayedParsedExpr *E) {
   // TODO(D0000): We definely should not use "CreateFromLambda" which is not clang idiomatic
   // if the object holds its own captures, we will reuse the logic from there
-  auto ImportToken = [this](ASTToken* ATok) -> Expected<ASTToken>
+  //TODO(D0000): We just copy here, we should preallocate and update the pointers
+  auto ImportToken = [this](ASTToken* ATok) -> Expected<Token>
   {
     Token Tok = *ATok;
     switch (Tok.getKind())
@@ -8912,14 +8913,14 @@ ASTNodeImporter::VisitCXXDelayedParsedExpr(CXXDelayedParsedExpr *E) {
       return make_error<ASTImportError>(ASTImportError::UnsupportedConstruct);
     }
     //TODO(D0000): There is a warning about unvisited case for NUM_TOKENS, don't know how to silence it
-    return ASTToken(Tok);
+    return Tok;
   };
 
-  SmallVector<ASTToken, 16> ImportedTokens;
+  SmallVector<Token, 16> ImportedTokens;
   auto ImportTokensOrErr = [&]() -> Error
   {
-      for (unsigned i = 0; i < E->NumTokens; i++) {
-        Expected<ASTToken> TokenOrErr = ImportToken(&E->BodyTokens[i]);
+      for (auto first = E->getBodyTokensBegin(), last = E->getBodyTokensEnd(); first != last; ++ first) {
+        Expected<Token> TokenOrErr = ImportToken(&*first);
         if (!TokenOrErr)
           return TokenOrErr.takeError();
         ImportedTokens.push_back(*TokenOrErr);

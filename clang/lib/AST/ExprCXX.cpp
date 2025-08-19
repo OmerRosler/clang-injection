@@ -1458,7 +1458,7 @@ return std::string(tok::getTokenName(kind()));
 
 
 CXXDelayedParsedExpr::CXXDelayedParsedExpr(QualType T,
-                                           ArrayRef<ASTToken> BodyTokens,
+                                           ArrayRef<Token> BodyTokens,
                                            LambdaExpr *ParseFunction,
                                            bool ContainsUnexpandedParameterPack)
     : Expr(CXXDelayedParsedExprClass, T, VK_PRValue, OK_Ordinary),
@@ -1466,13 +1466,12 @@ CXXDelayedParsedExpr::CXXDelayedParsedExpr(QualType T,
     
     setDependence(computeDependence(this, ContainsUnexpandedParameterPack));
     //copy the tokens into the body
-    std::copy(BodyTokens.begin(), BodyTokens.end(), this->BodyTokens);
+    std::copy(BodyTokens.begin(), BodyTokens.end(), this->getBodyTokensBegin());
 }
 
 
 CXXDelayedParsedExpr::CXXDelayedParsedExpr(EmptyShell Empty, unsigned NumTokens)
     : Expr(CXXDelayedParsedExprClass, Empty),
-    BodyTokens(nullptr),
     ParseFunction(nullptr)
 {
   this->NumTokens = NumTokens;
@@ -1482,7 +1481,7 @@ CXXDelayedParsedExpr::CXXDelayedParsedExpr(EmptyShell Empty, unsigned NumTokens)
 CXXDelayedParsedExpr *
 CXXDelayedParsedExpr::Create(const ASTContext &C, 
                              CXXRecordDecl *Class,
-                             ArrayRef<ASTToken> BodyTokens,
+                             ArrayRef<Token> BodyTokens,
                              SourceRange IntroducerRange, 
                              LambdaCaptureDefault CaptureDefault,
                              SourceLocation CaptureDefaultLoc, 
@@ -1499,7 +1498,7 @@ CXXDelayedParsedExpr::Create(const ASTContext &C,
         ExplicitParams, ExplicitResultType, CaptureInits, ClosingBrace,
         ContainsUnexpandedParameterPack);
     
-    unsigned Size = BodyTokens.size() * sizeof(Token) + sizeof(CXXDelayedParsedExpr);
+    unsigned Size = totalSizeToAlloc<ASTToken>(BodyTokens.size());
     void *Mem = C.Allocate(Size);
     
     return new (Mem) CXXDelayedParsedExpr(T, BodyTokens, lambda,
@@ -1508,11 +1507,11 @@ CXXDelayedParsedExpr::Create(const ASTContext &C,
 };
 
 CXXDelayedParsedExpr* CXXDelayedParsedExpr::CreateFromLambda(
-    const ASTContext& Ctx, ArrayRef<ASTToken> BodyTokens,
+    const ASTContext& Ctx, ArrayRef<Token> BodyTokens,
     LambdaExpr* ParseFunction,
     bool ContainsUnexpandedParameterPack)
 {
-    unsigned Size = BodyTokens.size() * sizeof(ASTToken) + sizeof(CXXDelayedParsedExpr);
+    unsigned Size = totalSizeToAlloc<ASTToken>(BodyTokens.size());
     void *Mem = Ctx.Allocate(Size);
     return new (Mem)
         CXXDelayedParsedExpr(ParseFunction->getType(), BodyTokens,
@@ -1522,7 +1521,7 @@ CXXDelayedParsedExpr* CXXDelayedParsedExpr::CreateFromLambda(
 CXXDelayedParsedExpr *
 CXXDelayedParsedExpr::CreateDeserialized(const ASTContext& C, unsigned NumTokens)
 {
-    unsigned Size = NumTokens * sizeof(Token) + sizeof(CXXDelayedParsedExpr);
+    unsigned Size = totalSizeToAlloc<ASTToken>(NumTokens);
     void *Mem = C.Allocate(Size);
     return new (Mem) CXXDelayedParsedExpr(EmptyShell(), NumTokens);
 }

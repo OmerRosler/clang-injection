@@ -546,10 +546,8 @@ void ASTStmtReader::VisitCXXDelayedParsedExpr(CXXDelayedParsedExpr *E) {
   unsigned NumTokens = Record.readInt();
   (void) NumTokens;
   E->NumTokens = NumTokens;
-  for(unsigned i = 0; i< NumTokens; i++)
-  {
-    E->BodyTokens[i] = ASTToken(Record.readToken());
-  }
+  std::generate_n(E->getBodyTokensBegin(), E->NumTokens, 
+    [this]()-> ASTToken {return Record.readToken();});
   //read parse function
   Expr *ParseFn = Record.readExpr();
   E->setParseFn(cast<LambdaExpr>(ParseFn));

@@ -61,6 +61,17 @@ void Preprocessor::CommitBacktrackedTokens() {
     PopUnannotatedBacktrackTokens();
 }
 
+// Steal the tokens
+//TODO(D0000): Should we steal the size as well?
+Preprocessor::CachedTokensTy Preprocessor::CommitBacktrackedTokensAndStealThem() {
+  assert(isBacktrackEnabled() && "EnableBacktrackAtThisPos was not called!");
+  assert(Unannotated && "Stealing in annotated mode is not supported");
+  //TODO: This is wrong, the same vector can store multiple backtrack positions. We have to use only one
+  auto [BacktrackPos, Unannotated] = LastBacktrackPos();
+  BacktrackPositions.pop_back();
+  return PopUnannotatedBacktrackTokens();
+}
+
 // Make Preprocessor re-lex the tokens that were lexed since
 // EnableBacktrackAtThisPos() was previously called.
 void Preprocessor::Backtrack() {

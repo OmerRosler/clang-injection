@@ -8376,6 +8376,7 @@ private:
                                 SourceLocation *endLoc = nullptr);
 
 private:
+  friend class StealingTentativeParsingAction;
   /// TentativeParsingAction - An object that is used as a kind of "tentative
   /// parsing transaction". It gets instantiated to mark the token position and
   /// after the token consumption is done, Commit() or Revert() is called to
@@ -8397,6 +8398,8 @@ private:
     unsigned short PrevParenCount, PrevBracketCount, PrevBraceCount,
                    PrevSpliceCount;
     bool isActive;
+
+    friend class StealingTentativeParsingAction;
 
   public:
     explicit TentativeParsingAction(Parser &p, bool Unannotated = false)

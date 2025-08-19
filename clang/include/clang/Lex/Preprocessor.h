@@ -1139,6 +1139,8 @@ private:
   /// \c createPreprocessingRecord() prior to preprocessing.
   PreprocessingRecord *Record = nullptr;
 
+  friend class StealingTentativeParsingAction;
+
   /// Cached tokens state.
   using CachedTokensTy = SmallVector<Token, 1>;
 
@@ -1737,6 +1739,8 @@ private:
   std::pair<CachedTokensTy::size_type, bool> LastBacktrackPos();
 
   CachedTokensTy PopUnannotatedBacktrackTokens();
+
+  CachedTokensTy CommitBacktrackedTokensAndStealThem();
 
 public:
   /// Disable the last EnableBacktrackAtThisPos call.

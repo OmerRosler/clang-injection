@@ -2448,9 +2448,11 @@ void StmtPrinter::VisitLambdaExpr(LambdaExpr *Node) {
 void StmtPrinter::VisitCXXDelayedParsedExpr(CXXDelayedParsedExpr* Node)
 {
   OS << "^^{ ";
-  for(auto first =  Node->getBodyTokensBegin(), last = Node->getBodyTokensEnd(); 
-  first != last; ++first)
-    OS << first->str() << ' ';
+  std::for_each(Node->getBodyTokensBegin(), Node->getBodyTokensEnd(),
+    [this](ASTToken& Tok)
+    {
+      OS << Tok.str() << ' ';
+    });
   OS << "}";
 }
 

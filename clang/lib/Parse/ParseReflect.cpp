@@ -21,17 +21,13 @@ using namespace clang;
 
 ExprResult Parser::ParseRawTokenSequence()
 {
-  //TODO(D0000): Right now only allow {}
-  assert(Tok.is(tok::l_brace));
-  BalancedDelimiterTracker Parens(*this, tok::l_brace);
   return ExprError();
 }
-
 ExprResult Parser::ParseCXXDelayedParsedExpression()  {
   //parse as: blueprintexpr []{}{ token-sequence }
   assert(Tok.is(tok::kw_blueprintexpr));
   ConsumeToken();
-  //TODO(D0000): Create an empty lambda and just consume the tokens for now
+  //TODO(D0000): Parsing the lambda directly is wrong, as it parses the whole decleration. We have to use the ActOn logic directly
   // Parse lambda
   ExprResult EmptyLambdaOrErr = ParseLambdaExpression();
   if (EmptyLambdaOrErr.isInvalid())
@@ -39,12 +35,24 @@ ExprResult Parser::ParseCXXDelayedParsedExpression()  {
 
   LambdaExpr* Lambda = EmptyLambdaOrErr.getAs<LambdaExpr>();
 
-  ExprResult TokSeq = ParseRawTokenSequence();
 
-  SmallVector<ASTToken, 16> tokens = {};
-  
-  //TODO: Is using the AST type the idiomatic way?
-  return Actions.ActOnCXXDelayedParsedExpr(Lambda, tokens, 
+  assert(Tok.is(tok::l_brace));
+  StealingTentativeParsingAction TokenReader(*this);
+
+  SourceLocation l_brace_loc = Tok.getLocation();
+
+  BalancedDelimiterTracker Braces(*this, tok::l_brace);
+  Braces.consumeOpen();
+
+  SkipUntil(tok::r_brace, StopBeforeMatch);
+  SourceLocation r_brace_loc = Tok.getLocation();
+
+  // get cached tokens and do a trivial copy of them into a data structure to be iterated by Sema
+  auto CachedTokens = TokenReader.CommitAndSteal();
+  Braces.consumeClose();
+
+  //TODO: Pass brace location to the AST type
+  return Actions.ActOnCXXDelayedParsedExpr(Lambda, CachedTokens, 
     Lambda->containsUnexpandedParameterPack());
 }
 

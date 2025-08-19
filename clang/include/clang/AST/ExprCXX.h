@@ -2186,7 +2186,7 @@ public:
 class ASTToken {
 public:
   /// EXPECTS: clang::Token is not an annotation token.
-  explicit ASTToken(const Token &T);
+  ASTToken(const Token &T);
   operator Token() const;
 
   tok::TokenKind kind() const { return Kind; }
@@ -2231,12 +2231,15 @@ private:
   unsigned short Flags;
 };
 
-class CXXDelayedParsedExpr final : public Expr {
+class CXXDelayedParsedExpr final : public Expr,
+                                   private llvm::TrailingObjects<CXXDelayedParsedExpr, ASTToken> 
+                                   {
+  friend class TrailingObjects;
   // The context parameters
   //TemplateParameterList *ImplicitTemplateParams = nullptr;
 
   // TODO(D0000): Replace with token stream and parser state
-
+  
 
   
   Stmt *ParseFunction;
@@ -2245,12 +2248,10 @@ class CXXDelayedParsedExpr final : public Expr {
   CXXDelayedParsedExpr(EmptyShell, unsigned NumCaptures);
   
   public:
-  //TODO: Make this private and use "bits" to get data from it
-  ASTToken *BodyTokens;
   unsigned int NumTokens;
 
   CXXDelayedParsedExpr(QualType T, 
-                       ArrayRef<ASTToken> BodyLiteral, 
+                       ArrayRef<Token> BodyLiteral, 
                        LambdaExpr* ParseFunction,
                        bool ContainsUnexpandedParameterPack);
 
@@ -2258,13 +2259,14 @@ class CXXDelayedParsedExpr final : public Expr {
 
   //TODO(D0000): Remove this. We should never create the lambda separately
   static CXXDelayedParsedExpr *
-  CreateFromLambda(const ASTContext &Ctx, ArrayRef<ASTToken> BodyTokens,
+  CreateFromLambda(const ASTContext &Ctx, ArrayRef<Token> BodyTokens,
                    LambdaExpr *ParseFunction,
                    bool ContainsUnexpandedParameterPack);
   
+  //TODO(D0000): Right now, the Create takes arguments which are not AST types, like Token (and not ASTToken), make sure if this is idomatic clang
   static CXXDelayedParsedExpr *
   Create(const ASTContext &C, CXXRecordDecl *Class,
-         ArrayRef<ASTToken> BodyLiteral, 
+         ArrayRef<Token> BodyLiteral, 
          SourceRange IntroducerRange,
          LambdaCaptureDefault CaptureDefault, SourceLocation CaptureDefaultLoc,
          bool ExplicitParams, bool ExplicitResultType,
@@ -2281,16 +2283,32 @@ class CXXDelayedParsedExpr final : public Expr {
   LambdaExpr *getParseFn() const;
   void setParseFn(LambdaExpr *);
 
-  //void setBeginLoc(SourceLocation StartLoc);
-  //void setEndLoc(SourceLocation EndLoc);
-
-  ASTToken *getBodyTokensBegin() const {
-    return BodyTokens;
+  void setBeginLoc(SourceLocation StartLoc);
+  void setEndLoc(SourceLocation EndLoc);
+  
+  
+  const ASTToken *getBodyTokensBegin() const {
+    return getTrailingObjects();
+  }
+  ASTToken *getBodyTokensBegin() {
+    return getTrailingObjects();
+  }
+  
+  const ASTToken * getBodyTokensEnd() const {
+    return &getTrailingObjects()[NumTokens];
+  }
+  ASTToken * getBodyTokensEnd() {
+    return &getTrailingObjects()[NumTokens];
   }
 
-  ASTToken * getBodyTokensEnd() const {
-    return &BodyTokens[NumTokens];
+  //TODO(D0000): Understand how clang allows iteration. For example for lambda captures
+  // we only allow const iterations, but then how is the serializar build them?
+  using body_tokens_range = llvm::iterator_range<const ASTToken*>;
+  body_tokens_range getBodyRange() const
+  {
+    return body_tokens_range(getBodyTokensBegin(), getBodyTokensEnd());
   }
+
 
   // void setBody(TokenStreamLiteral* Body)
   // {
