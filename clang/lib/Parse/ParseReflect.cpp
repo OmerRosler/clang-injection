@@ -23,9 +23,12 @@ ExprResult Parser::ParseRawTokenSequence()
 {
   return ExprError();
 }
+
 ExprResult Parser::ParseCXXDelayedParsedExpression()  {
   //parse as: blueprintexpr []{}{ token-sequence }
   assert(Tok.is(tok::kw_blueprintexpr));
+  StealingTentativeParsingAction TokenCacher(*this);
+  SourceLocation BeginLoc = Tok.getLocation();
   ConsumeToken();
   //TODO(D0000): Parsing the lambda directly is wrong, as it parses the whole decleration. We have to use the ActOn logic directly
   // Parse lambda
@@ -37,23 +40,42 @@ ExprResult Parser::ParseCXXDelayedParsedExpression()  {
 
 
   assert(Tok.is(tok::l_brace));
-  StealingTentativeParsingAction TokenReader(*this);
 
   SourceLocation l_brace_loc = Tok.getLocation();
 
   BalancedDelimiterTracker Braces(*this, tok::l_brace);
   Braces.consumeOpen();
 
-  SkipUntil(tok::r_brace, StopBeforeMatch);
-  SourceLocation r_brace_loc = Tok.getLocation();
-
+  //TODO(D0000): Capture some syntax errors early, like {(}
+  //TODO(D0000): Enforce an ending semicolon {token-seq;} so that the skipUntil wouldn't consume everything if there is a syntax error
+  // Note this is ok thing to do if this is always a single decleration
+  // A syntax error inside this is dangerous, because we enter this token stream later, which will have different errors everywhere
+  // Catching these early is also a starting point for fragemnt parsing
+  // Also note this is hard to do without tracking nesting of all delimiters at once. We need a new RAII type just for that
+  bool SyntaxIsOk = SkipUntil(tok::r_brace);
+  if (!SyntaxIsOk)
+  {
+    TokenCacher.Revert();
+    return ExprError();
+  }
   // get cached tokens and do a trivial copy of them into a data structure to be iterated by Sema
-  auto CachedTokens = TokenReader.CommitAndSteal();
-  Braces.consumeClose();
+  auto CachedTokens = TokenCacher.CommitAndSteal();
 
   //TODO: Pass brace location to the AST type
-  return Actions.ActOnCXXDelayedParsedExpr(Lambda, CachedTokens, 
+  auto Result = Actions.ActOnCXXDelayedParsedExpr(Lambda, CachedTokens, 
     Lambda->containsUnexpandedParameterPack());
+
+  if (Result.isInvalid())
+  {
+    return Result;
+  }
+
+  Tok.setKind(tok::annot_token_sequence);
+  Tok.setAnnotationValue(Result.getAsOpaquePointer());
+  Tok.setLocation(BeginLoc);
+  Tok.setAnnotationEndLoc(Braces.getCloseLocation());
+  PP.AnnotateCachedTokens(Tok);  
+  return Result;
 }
 
 ExprResult Parser::ParseCXXReflectExpression(SourceLocation OpLoc) {

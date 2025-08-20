@@ -52,6 +52,19 @@ Preprocessor::CachedTokensTy Preprocessor::PopUnannotatedBacktrackTokens() {
   return std::move(UnannotatedTokens);
 }
 
+Preprocessor::UnannoataedCacheStackInfoTy Preprocessor::PopUnannotatedBacktrackTokensAndReturnInfo() {
+  assert(isUnannotatedBacktrackEnabled() && "missing unannotated tokens?");
+  auto Res = std::move(UnannotatedBacktrackTokens.back());
+  auto [UnannotatedTokens, NumCachedToks] = Res;
+  UnannotatedBacktrackTokens.pop_back();
+  // If another unannotated backtrack is active, propagate any tokens that were
+  // lexed (not cached) since EnableBacktrackAtThisPos was last called.
+  if (isUnannotatedBacktrackEnabled())
+    UnannotatedBacktrackTokens.back().first.append(
+        UnannotatedTokens.begin() + NumCachedToks, UnannotatedTokens.end());
+  return Res;
+}
+
 // Disable the last EnableBacktrackAtThisPos call.
 void Preprocessor::CommitBacktrackedTokens() {
   assert(isBacktrackEnabled() && "EnableBacktrackAtThisPos was not called!");
@@ -62,14 +75,13 @@ void Preprocessor::CommitBacktrackedTokens() {
 }
 
 // Steal the tokens
-//TODO(D0000): Should we steal the size as well?
-Preprocessor::CachedTokensTy Preprocessor::CommitBacktrackedTokensAndStealThem() {
+Preprocessor::StolenCachedTokensTy Preprocessor::CommitBacktrackedTokensAndStealThem() {
   assert(isBacktrackEnabled() && "EnableBacktrackAtThisPos was not called!");
-  assert(Unannotated && "Stealing in annotated mode is not supported");
-  //TODO: This is wrong, the same vector can store multiple backtrack positions. We have to use only one
   auto [BacktrackPos, Unannotated] = LastBacktrackPos();
+  assert(Unannotated && "Stealing is only allowed in annotated mode");
   BacktrackPositions.pop_back();
-  return PopUnannotatedBacktrackTokens();
+
+  return StolenCachedTokensTy(PopUnannotatedBacktrackTokensAndReturnInfo());
 }
 
 // Make Preprocessor re-lex the tokens that were lexed since

@@ -1140,10 +1140,11 @@ private:
   PreprocessingRecord *Record = nullptr;
 
   friend class StealingTentativeParsingAction;
-
+  
   /// Cached tokens state.
   using CachedTokensTy = SmallVector<Token, 1>;
-
+  
+  using UnannoataedCacheStackInfoTy = std::pair<CachedTokensTy, CachedTokensTy::size_type>;
   /// Cached tokens are stored here when we do backtracking or
   /// lookahead. They are "lexed" by the CachingLex() method.
   CachedTokensTy CachedTokens;
@@ -1740,7 +1741,22 @@ private:
 
   CachedTokensTy PopUnannotatedBacktrackTokens();
 
-  CachedTokensTy CommitBacktrackedTokensAndStealThem();
+  UnannoataedCacheStackInfoTy PopUnannotatedBacktrackTokensAndReturnInfo();
+
+  class StolenCachedTokensTy
+  {
+    Preprocessor::UnannoataedCacheStackInfoTy StorageAndInfo;
+  public:
+    StolenCachedTokensTy(Preprocessor::UnannoataedCacheStackInfoTy&& Last):
+      StorageAndInfo(std::move(Last))
+    {}
+
+    operator llvm::ArrayRef<Token>()
+    {
+      return ArrayRef<Token>(StorageAndInfo.first).slice(StorageAndInfo.second);
+    }
+  };
+  StolenCachedTokensTy CommitBacktrackedTokensAndStealThem();
 
 public:
   /// Disable the last EnableBacktrackAtThisPos call.

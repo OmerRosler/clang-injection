@@ -1466,7 +1466,7 @@ CXXDelayedParsedExpr::CXXDelayedParsedExpr(QualType T,
     
     setDependence(computeDependence(this, ContainsUnexpandedParameterPack));
     //copy the tokens into the body
-    std::copy(BodyTokens.begin(), BodyTokens.end(), this->getBodyTokensBegin());
+    llvm::copy(BodyTokens, this->getBodyTokensBegin());
 }
 
 

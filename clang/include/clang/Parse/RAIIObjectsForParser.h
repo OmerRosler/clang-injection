@@ -504,30 +504,30 @@ namespace clang {
     void skipToEnd();
   };
 
-  class StealingTentativeParsingAction : private Parser::TentativeParsingAction {
+  class StealingTentativeParsingAction {
+  private:
+  const bool AlreadyInCachingMode;
+  Parser::TentativeParsingAction Action;
   public:
-
-    using CachedTokensTy = typename Preprocessor::CachedTokensTy;
-    using TentativeParsingAction::Revert;
-
-    //TODO(D0000): Right now we use the PP's unannotated stack to steal. Maybe this is not a good idea, because poping 
-    // may be expensive if we are already inside an unannotated backtrack mode
-    // TODO(D000): Optimization opportuniny: if we are not in unannotated tentative parsing already, steal using the annotated stack
-    // this is beter, because poping the unannotated stack is costly. Note there are only two cases inside parsing where this is even done.
-    // Maybe a better way is to see if this is even possible for our expression
+    using StolenTokensTy = Preprocessor::StolenCachedTokensTy;
     StealingTentativeParsingAction(Parser& P):
-      TentativeParsingAction(P, /*Unannotated=*/true) {}
+      AlreadyInCachingMode(P.PP.InCachingLexMode()),
+      Action(P, /* Unannotated=*/true)
+      {
+      }
 
-
-    CachedTokensTy CommitAndSteal()
+    void Revert()
     {
-      //TODO: This can be wrong if there were already cached tokens before we entered, we may have stolen too many. We need to check
-      assert(isActive && "Parsing action was finished!");
-      P.TentativelyDeclaredIdentifiers.resize(
-          PrevTentativelyDeclaredIdentifierCount);
-      auto result = P.PP.CommitBacktrackedTokensAndStealThem();
-      isActive = false;
-      return result;
+      return Action.Revert();
+    }
+
+    StolenTokensTy CommitAndSteal()
+    {
+      Action.P.TentativelyDeclaredIdentifiers.resize(
+          Action.PrevTentativelyDeclaredIdentifierCount);
+      auto Result = Action.P.PP.CommitBacktrackedTokensAndStealThem();
+      Action.isActive = false;
+      return Result;
     }
   };
 } // end namespace clang
