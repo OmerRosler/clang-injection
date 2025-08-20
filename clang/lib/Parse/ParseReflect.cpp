@@ -27,7 +27,6 @@ ExprResult Parser::ParseRawTokenSequence()
 ExprResult Parser::ParseCXXDelayedParsedExpression()  {
   //parse as: blueprintexpr []{}{ token-sequence }
   assert(Tok.is(tok::kw_blueprintexpr));
-  StealingTentativeParsingAction TokenCacher(*this);
   SourceLocation BeginLoc = Tok.getLocation();
   ConsumeToken();
   //TODO(D0000): Parsing the lambda directly is wrong, as it parses the whole decleration. We have to use the ActOn logic directly
@@ -40,9 +39,7 @@ ExprResult Parser::ParseCXXDelayedParsedExpression()  {
 
 
   assert(Tok.is(tok::l_brace));
-
-  SourceLocation l_brace_loc = Tok.getLocation();
-
+  StealingTentativeParsingAction TokenCacher(*this);
   BalancedDelimiterTracker Braces(*this, tok::l_brace);
   Braces.consumeOpen();
 
@@ -52,14 +49,16 @@ ExprResult Parser::ParseCXXDelayedParsedExpression()  {
   // A syntax error inside this is dangerous, because we enter this token stream later, which will have different errors everywhere
   // Catching these early is also a starting point for fragemnt parsing
   // Also note this is hard to do without tracking nesting of all delimiters at once. We need a new RAII type just for that
-  bool SyntaxIsOk = SkipUntil(tok::r_brace);
+  bool SyntaxIsOk = SkipUntil(tok::r_brace, StopBeforeMatch);
   if (!SyntaxIsOk)
   {
     TokenCacher.Revert();
     return ExprError();
   }
+  Token Last = Tok;
   // get cached tokens and do a trivial copy of them into a data structure to be iterated by Sema
   auto CachedTokens = TokenCacher.CommitAndSteal();
+  Braces.consumeClose();
 
   //TODO: Pass brace location to the AST type
   auto Result = Actions.ActOnCXXDelayedParsedExpr(Lambda, CachedTokens, 
@@ -70,11 +69,11 @@ ExprResult Parser::ParseCXXDelayedParsedExpression()  {
     return Result;
   }
 
-  Tok.setKind(tok::annot_token_sequence);
-  Tok.setAnnotationValue(Result.getAsOpaquePointer());
-  Tok.setLocation(BeginLoc);
-  Tok.setAnnotationEndLoc(Braces.getCloseLocation());
-  PP.AnnotateCachedTokens(Tok);  
+  Last.setKind(tok::annot_token_sequence);
+  Last.setAnnotationValue(Result.getAsOpaquePointer());
+  Last.setLocation(BeginLoc);
+  Last.setAnnotationEndLoc(Braces.getCloseLocation());
+  PP.AnnotateCachedTokens(Last);  
   return Result;
 }
 

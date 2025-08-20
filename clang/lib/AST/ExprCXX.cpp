@@ -1462,7 +1462,8 @@ CXXDelayedParsedExpr::CXXDelayedParsedExpr(QualType T,
                                            LambdaExpr *ParseFunction,
                                            bool ContainsUnexpandedParameterPack)
     : Expr(CXXDelayedParsedExprClass, T, VK_PRValue, OK_Ordinary),
-      ParseFunction(ParseFunction) {
+      ParseFunction(ParseFunction),
+      NumTokens(BodyTokens.size()) {
     
     setDependence(computeDependence(this, ContainsUnexpandedParameterPack));
     //copy the tokens into the body
@@ -1472,9 +1473,9 @@ CXXDelayedParsedExpr::CXXDelayedParsedExpr(QualType T,
 
 CXXDelayedParsedExpr::CXXDelayedParsedExpr(EmptyShell Empty, unsigned NumTokens)
     : Expr(CXXDelayedParsedExprClass, Empty),
-    ParseFunction(nullptr)
+    ParseFunction(nullptr),
+    NumTokens(NumTokens)
 {
-  this->NumTokens = NumTokens;
 }
 
 

@@ -2245,7 +2245,7 @@ class CXXDelayedParsedExpr final : public Expr,
   Stmt *ParseFunction;
   
   protected:
-  CXXDelayedParsedExpr(EmptyShell, unsigned NumCaptures);
+  CXXDelayedParsedExpr(EmptyShell, unsigned NumTokens);
   
   public:
   unsigned int NumTokens;

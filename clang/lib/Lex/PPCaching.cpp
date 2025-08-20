@@ -78,7 +78,7 @@ void Preprocessor::CommitBacktrackedTokens() {
 Preprocessor::StolenCachedTokensTy Preprocessor::CommitBacktrackedTokensAndStealThem() {
   assert(isBacktrackEnabled() && "EnableBacktrackAtThisPos was not called!");
   auto [BacktrackPos, Unannotated] = LastBacktrackPos();
-  assert(Unannotated && "Stealing is only allowed in annotated mode");
+  assert(Unannotated && "Stealing is only allowed in unannotated mode");
   BacktrackPositions.pop_back();
 
   return StolenCachedTokensTy(PopUnannotatedBacktrackTokensAndReturnInfo());

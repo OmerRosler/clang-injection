@@ -431,6 +431,8 @@ public:
   void VisitEmbedExpr(const EmbedExpr *S);
   void VisitAtomicExpr(const AtomicExpr *AE);
   void VisitConvertVectorExpr(const ConvertVectorExpr *S);
+  //TODO(D0000): Once we defined all subtypes of this as part of the AST, maybe the default would be enough?
+  void VisitCXXDelayedParsedExpr(const CXXDelayedParsedExpr *S);
 };
 
 } // namespace clang

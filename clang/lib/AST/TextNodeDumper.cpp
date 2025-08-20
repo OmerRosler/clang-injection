@@ -3171,3 +3171,12 @@ void TextNodeDumper::VisitConvertVectorExpr(const ConvertVectorExpr *S) {
   if (S->hasStoredFPFeatures())
     printFPOptions(S->getStoredFPFeatures());
 }
+
+void TextNodeDumper::VisitCXXDelayedParsedExpr(const CXXDelayedParsedExpr *S) {
+  VisitStmt(S);
+  OS << "Tokens: ";
+  for (auto& Tok : S->getBodyRange())
+  {
+    OS << Tok.str() << ' ';
+  }
+}
