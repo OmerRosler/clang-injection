@@ -43,26 +43,71 @@ ExprResult Parser::ParseCXXDelayedParsedExpression()  {
   BalancedDelimiterTracker Braces(*this, tok::l_brace);
   Braces.consumeOpen();
 
-  //TODO(D0000): Capture some syntax errors early, like {(}
-  //TODO(D0000): Enforce an ending semicolon {token-seq;} so that the skipUntil wouldn't consume everything if there is a syntax error
-  // Note this is ok thing to do if this is always a single decleration (which is intented). For example we will diagnose
-  //{{};{};} as illegal because of multiple delcreations at highest nesting
-  // A syntax error inside this is dangerous, because we enter this token stream later, which will have different errors everywhere
-  // Catching these early is also a starting point for fragemnt parsing
-  // Also note this is hard to do without tracking nesting of all delimiters at once. We need a new RAII type just for that
+  /*TODO(D0000): Make the end syntax to be a semi. So that {{;};} is fine
+  but {{};{};} isn't. 
+  This is important for several reasons:
+
+  1. OnErrorPath: Prevent from stealing alot when missing }. 
+  Usually the parser stops in a ; and detects the error,
+  but here every syntax in the middle is possible so it will just consume
+  the whole block. 
+
+  2. OnSuccess: This is alwyays one declreation, 
+  using a ; is accepted here.
+
+  3. For users: Don't let them think this is a macro, we add ; inside.
+
+  Problems to solve:
+  1. Make sure that in a single declreation (complicated as it may be),
+  there will be no ; in the middle.
+  Note that this isn't true for statements like for(;;).
+  With non-standard extensions like expression-statements,
+  this is possible.
+  Solution: If we don't this extension within the block, 
+  we can just check the {} nesting level.
+  This is not hard as we don't track nesting of multiple kinds
+  of delimeters at once.
+
+  2. In the future. when we get to satement injection, 
+  I don't think there is a way to check this (end with semi) 
+  without some partial parse. 
+  But we still allow only a single statement, 
+  so we only need to disambiguate init declerations.
+  Maybe with statements where their syntax is non-consext-dependent (ish)
+  we could just parse directly (or the kind of statement would
+  be part of the blueprint syntax itself).
+  
+
+  */
   bool SyntaxIsOk = SkipUntil(tok::r_brace, StopBeforeMatch);
   if (!SyntaxIsOk)
   {
     TokenCacher.Revert();
     return ExprError();
   }
-  Token Last = Tok;
-  // get cached tokens and do a trivial copy of them into a data structure to be iterated by Sema
-  auto CachedTokens = TokenCacher.CommitAndSteal();
-  
+
+  Token StealingAnnot = Tok;
+  StealingAnnot.setKind(tok::annot_token_sequence);
+  StealingAnnot.setLocation(BeginLoc);
+  if (Tok.isNot(tok::r_brace))
+  {
+    TokenCacher.Revert();
+    return ExprError();
+  }
+  auto RBraceLocation = Tok.getLocation();
+  assert(Tok.is(tok::r_brace));
+  StealingAnnot.setAnnotationEndLoc(RBraceLocation);
+
+  TokenCacher.CommitAndAnnotate(StealingAnnot);
+
+  // Steal tokens and replae with the annotation token
+  auto CachedTokens = TokenCacher.StealAfterCommiting();
+  Braces.consumeClose();
   //TODO: Pass brace location to the AST type
+  // TODO(D0000) : HACK needs to be removed: 
   // The `drop_back` is because We don't want to pass the consumed closing brace to Sema
-  // It should probably be done elsewhere
+  // If we want to optimize the storage by just moving the vector into the AST type,
+  // we should not slice it
   auto Result = Actions.ActOnCXXDelayedParsedExpr(Lambda, 
     llvm::ArrayRef<Token>(CachedTokens).drop_back(), 
     Lambda->containsUnexpandedParameterPack());
@@ -71,13 +116,10 @@ ExprResult Parser::ParseCXXDelayedParsedExpression()  {
     {
       return Result;
     }
-  Braces.consumeClose();
+  
+  //TODO: I don't think this points to the right place
+  StealingAnnot.setAnnotationValue(Result.getAsOpaquePointer());
 
-  Last.setKind(tok::annot_token_sequence);
-  Last.setAnnotationValue(Result.getAsOpaquePointer());
-  Last.setLocation(BeginLoc);
-  Last.setAnnotationEndLoc(Braces.getCloseLocation());
-  PP.AnnotateCachedTokens(Last);  
   return Result;
 }
 

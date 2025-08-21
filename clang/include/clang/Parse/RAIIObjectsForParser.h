@@ -504,25 +504,35 @@ namespace clang {
     void skipToEnd();
   };
 
+  // A TentativeParsingAction whose Commit moves the tokens parsed into the caller
+  // should be used whenever one wants permanant storage of Tokens while using the 
+  // optimized caching facility to construct them and ideally never move these again
   class StealingTentativeParsingAction {
   private:
-  const bool AlreadyInCachingMode;
+  bool CommitCalled = false;
   Parser::TentativeParsingAction Action;
   public:
     using StolenTokensTy = Preprocessor::StolenCachedTokensTy;
     StealingTentativeParsingAction(Parser& P):
-      AlreadyInCachingMode(P.PP.InCachingLexMode()),
       Action(P, /* Unannotated=*/true)
       {
       }
 
     void Revert()
     {
+      assert(!CommitCalled && "Can't Revert after commiting");
       return Action.Revert();
     }
 
-    StolenTokensTy CommitAndSteal()
+    void CommitAndAnnotate(const Token& StealingAnnot)
     {
+      Action.P.PP.AnnotateCachedTokens(StealingAnnot);
+      CommitCalled = true;
+    }
+
+    StolenTokensTy StealAfterCommiting()
+    {
+      assert(CommitCalled && "Must Call CommitAndAnnotate before stealing");
       Action.P.TentativelyDeclaredIdentifiers.resize(
           Action.PrevTentativelyDeclaredIdentifierCount);
       auto Result = Action.P.PP.CommitBacktrackedTokensAndStealThem();
