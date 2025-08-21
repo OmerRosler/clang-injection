@@ -16,8 +16,8 @@
 
 #include "clang/Basic/FileEntry.h"
 #include "clang/Basic/SourceLocation.h"
+#include "clang/Basic/Token.h"
 #include "clang/Lex/MultipleIncludeOpt.h"
-#include "clang/Lex/Token.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/SmallVector.h"
 #include <cassert>

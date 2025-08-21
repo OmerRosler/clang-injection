@@ -16,7 +16,7 @@
 
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/AbstractBasicReader.h"
-#include "clang/Lex/Token.h"
+#include "clang/Basic/Token.h"
 #include "clang/Serialization/ASTReader.h"
 #include "clang/Serialization/SourceLocationEncoding.h"
 #include "llvm/ADT/APFloat.h"

@@ -10,7 +10,7 @@
 #define LLVM_CLANG_TOOLS_EXTRA_CLANG_TIDY_MODERNIZE_USETRAILINGRETURNTYPECHECK_H
 
 #include "../ClangTidyCheck.h"
-#include "clang/Lex/Token.h"
+#include "clang/Basic/Token.h"
 
 namespace clang::tidy::modernize {
 

@@ -43,6 +43,7 @@
 #include "clang/Basic/OpenMPKinds.h"
 #include "clang/Basic/OperatorKinds.h"
 #include "clang/Basic/SourceLocation.h"
+#include "clang/Basic/Token.h"
 #include "clang/Basic/TypeTraits.h"
 #include "clang/Lex/Lexer.h"
 #include "llvm/ADT/ArrayRef.h"
@@ -2447,12 +2448,11 @@ void StmtPrinter::VisitLambdaExpr(LambdaExpr *Node) {
 
 void StmtPrinter::VisitCXXDelayedParsedExpr(CXXDelayedParsedExpr* Node)
 {
-  OS << "^^{ ";
-  std::for_each(Node->getBodyTokensBegin(), Node->getBodyTokensEnd(),
-    [this](ASTToken& Tok)
-    {
-      OS << Tok.str() << ' ';
-    });
+  OS << "blueprintexpr { ";
+  for (auto& Tok : Node->getBodyRange())
+  {
+    OS << Tok.getName() << ' ';
+  }
   OS << "}";
 }
 

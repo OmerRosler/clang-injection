@@ -33,7 +33,7 @@
 #include "clang/Basic/OperatorKinds.h"
 #include "clang/Basic/SourceLocation.h"
 #include "clang/Basic/Specifiers.h"
-#include "clang/Lex/Token.h"
+#include "clang/Basic/Token.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/Support/ErrorHandling.h"
 #include <cassert>
@@ -1429,34 +1429,6 @@ LambdaExpr::const_child_range LambdaExpr::children() const {
 }
 
 
-ASTToken::ASTToken(const clang::Token &T)
-    : Kind(T.getKind()),
-    UintData(T.UintData),
-    PtrData(T.PtrData),
-    Flags(T.Flags) {
-  assert(!T.isAnnotation());
-}
-
-ASTToken::operator Token() const
-{
-  Token res{};
-  res.Kind = Kind;
-  res.UintData = UintData; 
-  res.PtrData = PtrData; 
-  res.Flags = Flags;
-  return res;
-}
-
-unsigned ASTToken::getLength() const {
-  assert(!isAnnotation() && "Annotation tokens have no length field");
-  return UintData;
-}
-
-std::string ASTToken::str() const {
-return std::string(tok::getTokenName(kind()));
-}
-
-
 CXXDelayedParsedExpr::CXXDelayedParsedExpr(QualType T,
                                            ArrayRef<Token> BodyTokens,
                                            LambdaExpr *ParseFunction,
@@ -1499,7 +1471,7 @@ CXXDelayedParsedExpr::Create(const ASTContext &C,
         ExplicitParams, ExplicitResultType, CaptureInits, ClosingBrace,
         ContainsUnexpandedParameterPack);
     
-    unsigned Size = totalSizeToAlloc<ASTToken>(BodyTokens.size());
+    unsigned Size = totalSizeToAlloc<Token>(BodyTokens.size());
     void *Mem = C.Allocate(Size);
     
     return new (Mem) CXXDelayedParsedExpr(T, BodyTokens, lambda,
@@ -1512,7 +1484,7 @@ CXXDelayedParsedExpr* CXXDelayedParsedExpr::CreateFromLambda(
     LambdaExpr* ParseFunction,
     bool ContainsUnexpandedParameterPack)
 {
-    unsigned Size = totalSizeToAlloc<ASTToken>(BodyTokens.size());
+    unsigned Size = totalSizeToAlloc<Token>(BodyTokens.size());
     void *Mem = Ctx.Allocate(Size);
     return new (Mem)
         CXXDelayedParsedExpr(ParseFunction->getType(), BodyTokens,
@@ -1522,7 +1494,7 @@ CXXDelayedParsedExpr* CXXDelayedParsedExpr::CreateFromLambda(
 CXXDelayedParsedExpr *
 CXXDelayedParsedExpr::CreateDeserialized(const ASTContext& C, unsigned NumTokens)
 {
-    unsigned Size = totalSizeToAlloc<ASTToken>(NumTokens);
+    unsigned Size = totalSizeToAlloc<Token>(NumTokens);
     void *Mem = C.Allocate(Size);
     return new (Mem) CXXDelayedParsedExpr(EmptyShell(), NumTokens);
 }
@@ -1555,6 +1527,30 @@ void CXXDelayedParsedExpr::setParseFn(LambdaExpr* fn)
 //{
 //    TokenSequencceEndLoc = EndLoc;
 //}
+
+const Token *CXXDelayedParsedExpr::getBodyTokensBegin() const {
+  return getTrailingObjects();
+}
+Token *CXXDelayedParsedExpr::getBodyTokensBegin() {
+  return getTrailingObjects();
+}
+
+const Token * CXXDelayedParsedExpr::getBodyTokensEnd() const {
+  return &getTrailingObjects()[NumTokens];
+}
+Token * CXXDelayedParsedExpr::getBodyTokensEnd() {
+  return &getTrailingObjects()[NumTokens];
+}
+
+CXXDelayedParsedExpr::const_body_tokens_range CXXDelayedParsedExpr::getBodyRange() const
+{
+  return const_body_tokens_range(getBodyTokensBegin(), getBodyTokensEnd());
+}
+
+CXXDelayedParsedExpr::body_tokens_range CXXDelayedParsedExpr::getBodyRange()
+{
+  return body_tokens_range(getBodyTokensBegin(), getBodyTokensEnd());
+}
 
 CXXDelayedParsedExpr::child_range CXXDelayedParsedExpr::children() {
     //TODO: Make the literal a true AST type on its own and update this

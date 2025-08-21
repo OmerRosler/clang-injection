@@ -14,7 +14,7 @@
 #define LLVM_CLANG_LEX_MACROARGS_H
 
 #include "clang/Basic/LLVM.h"
-#include "clang/Lex/Token.h"
+#include "clang/Basic/Token.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/Support/TrailingObjects.h"
 #include <vector>

@@ -123,6 +123,7 @@ add_clang_library(clangBasic
   Targets/X86.cpp
   Targets/XCore.cpp
   Targets/Xtensa.cpp
+  Token.cpp
   TokenKinds.cpp
   TypeTraits.cpp
   Version.cpp

@@ -12,8 +12,8 @@
 
 #include "clang/Lex/PreprocessorLexer.h"
 #include "clang/Basic/SourceManager.h"
+#include "clang/Basic/Token.h"
 #include "clang/Lex/Preprocessor.h"
-#include "clang/Lex/Token.h"
 #include <cassert>
 
 using namespace clang;

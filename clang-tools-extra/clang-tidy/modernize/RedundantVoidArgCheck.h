@@ -10,7 +10,7 @@
 #define LLVM_CLANG_TOOLS_EXTRA_CLANG_TIDY_MODERNIZE_REDUNDANT_VOID_ARG_CHECK_H
 
 #include "../ClangTidyCheck.h"
-#include "clang/Lex/Token.h"
+#include "clang/Basic/Token.h"
 
 #include <string>
 

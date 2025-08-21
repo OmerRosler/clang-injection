@@ -13,8 +13,8 @@
 #include "clang/Basic/FileManager.h"
 #include "clang/Basic/IdentifierTable.h"
 #include "clang/Basic/SourceManager.h"
+#include "clang/Basic/Token.h"
 #include "clang/Lex/MacroInfo.h"
-#include "clang/Lex/Token.h"
 #include "llvm/Support/Path.h"
 #include <optional>
 

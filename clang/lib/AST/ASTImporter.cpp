@@ -56,7 +56,7 @@
 #include "clang/Basic/SourceLocation.h"
 #include "clang/Basic/SourceManager.h"
 #include "clang/Basic/Specifiers.h"
-#include "clang/Lex/Token.h" //TODO(D0000): This file should be moved into the AST
+#include "clang/Basic/Token.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/STLExtras.h"
@@ -400,6 +400,8 @@ namespace clang {
       }
       return Error::success();
     }
+
+    Error ImportTokenPostCopyLogic(Token& Tok);
 
   public:
     explicit ASTNodeImporter(ASTImporter &Importer) : Importer(Importer) {}
@@ -8836,105 +8838,101 @@ ExpectedStmt ASTNodeImporter::VisitCallExpr(CallExpr *E) {
                           /*MinNumArgs=*/0, E->getADLCallKind());
 }
 
+Error ASTNodeImporter::ImportTokenPostCopyLogic(Token& Tok) {
+  switch (Tok.getKind())
+  {
+  // In these cases, the token is a pointer to an IdentifierInfo*
+  //TODO(D0000): We may want to check the LangOptions() to see if they match
+#define KEYWORD(X, Y) case tok:: kw_##X: 
+#include "clang/Basic/TokenKinds.def"
+#undef KEYWORD
+  case tok::identifier:
+  {
+    IdentifierInfo * oldInfo = Tok.getIdentifierInfo();
+    IdentifierInfo* newInfo = Importer.Import(oldInfo);
+    Tok.setIdentifierInfo(newInfo);
+    break;
+  }
+  // In these cases the token is a pointer to a SourceRange 
+  case tok::unknown:
+  case tok::comment:
+  //numeric literals
+  case tok::numeric_constant:
+  case tok::char_constant:
+  case tok::wide_char_constant:
+  case tok::utf8_char_constant:
+  case tok::utf16_char_constant:
+  case tok::utf32_char_constant:
+  case tok::header_name:
+  case tok::binary_data:
+  //string literals
+  case tok::string_literal:
+  case tok::wide_string_literal:
+  case tok::utf8_string_literal:
+  case tok::utf16_string_literal:
+  case tok::utf32_string_literal:
+  {
+    SourceRange original_text(Tok.getLocation(), Tok.getEndLoc());
+    auto TextOrErr = Importer.Import(original_text);
+    if( !TextOrErr)
+      return TextOrErr.takeError();
+    Tok.setLocation(TextOrErr->getBegin());
+    // calculate the length in the new context
+    //TODO(D0000): If we don't allow macro expansions, maybe this is unnesscessary
+    auto[FID1, RawBeginLoc] = Importer.ToContext.getSourceManager().
+      getDecomposedLoc(TextOrErr->getBegin());
+    auto[FID2, RawEndLoc] = Importer.ToContext.getSourceManager().
+      getDecomposedLoc(TextOrErr->getEnd());
+    Tok.setLength(RawEndLoc - RawBeginLoc);
+    break;
+  }
+  // For punctuators we do nothing
+#define PUNCTUATOR(X, Y) case tok::X:
+#include "clang/Basic/TokenKinds.def"
+#undef PUNCTUATOR
+  {
+    break;
+  }
+  // Annotations are not supported yet
+#define ANNOTATION(X) case tok::annot_##X:
+#include "clang/Basic/TokenKinds.def"
+#undef ANNOTATION
+  //In certain situations the eof is used by the parser like an annotation
+  case tok::eof:
+  // These are not never meant to be imported
+  case tok::eod:
+  case tok::raw_identifier:
+  // TODO(D0000): Understand how to treat code completions
+  case tok::code_completion:
+    //TODO(D0000): We may need to special case some annotations here
+    return make_error<ASTImportError>(ASTImportError::UnsupportedConstruct);
+  }
+  //TODO(D0000): There is a warning about unvisited case for NUM_TOKENS, don't know how to silence it
+  return Error::success();
+}
+
 ExpectedStmt
 ASTNodeImporter::VisitCXXDelayedParsedExpr(CXXDelayedParsedExpr *E) {
   // TODO(D0000): We definely should not use "CreateFromLambda" which is not clang idiomatic
   // if the object holds its own captures, we will reuse the logic from there
-  //TODO(D0000): We just copy here, we should preallocate and update the pointers
-  auto ImportToken = [this](ASTToken* ATok) -> Expected<Token>
-  {
-    Token Tok = *ATok;
-    switch (Tok.getKind())
-    {
-    // In these cases, the token is a pointer to an IdentifierInfo*
-    //TODO(D0000): We may want to check the LangOptions() to see if they match
-#define KEYWORD(X, Y) case tok:: kw_##X: 
-#include "clang/Basic/TokenKinds.def"
-#undef KEYWORD
-    case tok::identifier:
-    {
-      IdentifierInfo * oldInfo = Tok.getIdentifierInfo();
-      IdentifierInfo* newInfo = Importer.Import(oldInfo);
-      Tok.setIdentifierInfo(newInfo);
-      break;
-    }
-    // In these cases the token is a pointer to a SourceRange 
-    case tok::unknown:
-    case tok::comment:
-    //numeric literals
-    case tok::numeric_constant:
-    case tok::char_constant:
-    case tok::wide_char_constant:
-    case tok::utf8_char_constant:
-    case tok::utf16_char_constant:
-    case tok::utf32_char_constant:
-    case tok::header_name:
-    case tok::binary_data:
-    //string literals
-    case tok::string_literal:
-    case tok::wide_string_literal:
-    case tok::utf8_string_literal:
-    case tok::utf16_string_literal:
-    case tok::utf32_string_literal:
-    {
-      SourceRange original_text(Tok.getLocation(), Tok.getEndLoc());
-      auto TextOrErr = Importer.Import(original_text);
-      if( !TextOrErr)
-        return TextOrErr.takeError();
-      Tok.setLocation(TextOrErr->getBegin());
-      // calculate the length in the new context
-      //TODO(D0000): If we don't allow macro expansions, maybe this is unnesscessary
-      auto[FID1, RawBeginLoc] = Importer.ToContext.getSourceManager().
-        getDecomposedLoc(TextOrErr->getBegin());
-      auto[FID2, RawEndLoc] = Importer.ToContext.getSourceManager().
-        getDecomposedLoc(TextOrErr->getEnd());
-      Tok.setLength(RawEndLoc - RawBeginLoc);
-      break;
-    }
-    // For punctuators we do nothing
-#define PUNCTUATOR(X, Y) case tok::X:
-#include "clang/Basic/TokenKinds.def"
-#undef PUNCTUATOR
-    {
-      break;
-    }
-    // Annotations are not supported yet
-#define ANNOTATION(X) case tok::annot_##X:
-#include "clang/Basic/TokenKinds.def"
-#undef ANNOTATION
-    //In certain situations the eof is used by the parser like an annotation
-    case tok::eof:
-    // These are not never meant to be imported
-    case tok::eod:
-    case tok::raw_identifier:
-    // TODO(D0000): Understand how to treat code completions
-    case tok::code_completion:
-      //TODO(D0000): We may need to special case some annotations here
-      return make_error<ASTImportError>(ASTImportError::UnsupportedConstruct);
-    }
-    //TODO(D0000): There is a warning about unvisited case for NUM_TOKENS, don't know how to silence it
-    return Tok;
-  };
 
-  SmallVector<Token, 16> ImportedTokens;
-  auto ImportTokensOrErr = [&]() -> Error
+  static_assert(std::is_trivially_copy_constructible_v<Token>);
+  // memcopy the Tokens
+  SmallVector<Token, 16> ImportedTokens(E->getBodyRange());
+  //Import the refered information
+  for (auto& Tok : ImportedTokens)
   {
-      for (auto first = E->getBodyTokensBegin(), last = E->getBodyTokensEnd(); first != last; ++ first) {
-        Expected<Token> TokenOrErr = ImportToken(&*first);
-        if (!TokenOrErr)
-          return TokenOrErr.takeError();
-        ImportedTokens.push_back(*TokenOrErr);
-      }
-      return Error::success();
-  }();
-  if (!ImportTokensOrErr)
-    return ImportTokensOrErr;
+    Error ImportTokenSuccess = ImportTokenPostCopyLogic(Tok);
+    if (ImportTokenSuccess)
+      return ImportTokenSuccess;
+  }
 
   auto ToLambdaOrErr = import(E->getParseFn());
   if (!ToLambdaOrErr)
     return ToLambdaOrErr.takeError();
   LambdaExpr *ToLambda = *ToLambdaOrErr;
 
+  //TODO: Use move on the tokens here
   return CXXDelayedParsedExpr::CreateFromLambda(
       Importer.getToContext(), ImportedTokens, ToLambda, 
       E->containsUnexpandedParameterPack());

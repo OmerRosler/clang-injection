@@ -46,7 +46,7 @@
 #include "clang/Basic/SourceLocation.h"
 #include "clang/Basic/Specifiers.h"
 #include "clang/Basic/TypeTraits.h"
-#include "clang/Lex/Token.h"
+#include "clang/Basic/Token.h"
 #include "clang/Serialization/ASTBitCodes.h"
 #include "clang/Serialization/ASTRecordReader.h"
 #include "llvm/ADT/DenseMap.h"
@@ -547,7 +547,7 @@ void ASTStmtReader::VisitCXXDelayedParsedExpr(CXXDelayedParsedExpr *E) {
   (void) NumTokens;
   E->NumTokens = NumTokens;
   std::generate_n(E->getBodyTokensBegin(), E->NumTokens, 
-    [this]()-> ASTToken {return Record.readToken();});
+    [this]()-> Token { return Record.readToken();});
   //read parse function
   Expr *ParseFn = Record.readExpr();
   E->setParseFn(cast<LambdaExpr>(ParseFn));

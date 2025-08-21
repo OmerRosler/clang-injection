@@ -32,7 +32,7 @@
 #include "clang/Basic/Lambda.h"
 #include "clang/Basic/OperatorKinds.h"
 #include "clang/Basic/Specifiers.h"
-#include "clang/Lex/Token.h"
+#include "clang/Basic/Token.h"
 #include "clang/Sema/Ownership.h"
 #include "clang/Sema/ParsedAttr.h"
 #include "llvm/ADT/STLExtras.h"

@@ -14,7 +14,7 @@
 #include "clang/ASTMatchers/ASTMatchersMacros.h"
 #include "clang/Basic/SourceLocation.h"
 #include "clang/Basic/Specifiers.h"
-#include "clang/Lex/Token.h"
+#include "clang/Basic/Token.h"
 #include "llvm/ADT/DenseSet.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallVector.h"

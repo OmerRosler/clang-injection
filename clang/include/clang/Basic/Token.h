@@ -10,8 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLVM_CLANG_LEX_TOKEN_H
-#define LLVM_CLANG_LEX_TOKEN_H
+#ifndef LLVM_CLANG_BASIC_TOKEN_H
+#define LLVM_CLANG_BASIC_TOKEN_H
 
 #include "clang/Basic/SourceLocation.h"
 #include "clang/Basic/TokenKinds.h"
@@ -355,4 +355,4 @@ struct PragmaLoopHintInfo {
 };
 } // end namespace clang
 
-#endif // LLVM_CLANG_LEX_TOKEN_H
+#endif // LLVM_CLANG_BASIC_TOKEN_H

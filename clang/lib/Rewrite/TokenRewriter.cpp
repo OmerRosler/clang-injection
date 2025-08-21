@@ -13,9 +13,9 @@
 
 #include "clang/Rewrite/Core/TokenRewriter.h"
 #include "clang/Basic/SourceManager.h"
+#include "clang/Basic/Token.h"
 #include "clang/Lex/Lexer.h"
 #include "clang/Lex/ScratchBuffer.h"
-#include "clang/Lex/Token.h"
 #include <cassert>
 #include <cstring>
 #include <map>

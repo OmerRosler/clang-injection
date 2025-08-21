@@ -22,6 +22,7 @@
 #include "clang/Basic/Module.h"
 #include "clang/Basic/SourceManager.h"
 #include "clang/Basic/Specifiers.h"
+#include "clang/Basic/Token.h"
 #include "clang/Basic/TypeTraits.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Frontend/HLSL/HLSLRootSignatureUtils.h"
@@ -3177,6 +3178,6 @@ void TextNodeDumper::VisitCXXDelayedParsedExpr(const CXXDelayedParsedExpr *S) {
   OS << "Tokens: ";
   for (auto& Tok : S->getBodyRange())
   {
-    OS << Tok.str() << ' ';
+    OS << Tok.getName() << ' ';
   }
 }

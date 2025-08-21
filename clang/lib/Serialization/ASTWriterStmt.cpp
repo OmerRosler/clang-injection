@@ -18,7 +18,7 @@
 #include "clang/AST/DeclTemplate.h"
 #include "clang/AST/ExprOpenMP.h"
 #include "clang/AST/StmtVisitor.h"
-#include "clang/Lex/Token.h"
+#include "clang/Basic/Token.h"
 #include "clang/Serialization/ASTReader.h"
 #include "clang/Serialization/ASTRecordWriter.h"
 #include "llvm/Bitstream/BitstreamWriter.h"
@@ -947,7 +947,7 @@ void ASTStmtWriter::VisitCXXDelayedParsedExpr(CXXDelayedParsedExpr* E)
   VisitExpr(E);
   Record.push_back(E->NumTokens);
   std::for_each(E->getBodyTokensBegin(), E->getBodyTokensEnd(), 
-    [this](ASTToken& Tok)
+    [this](const Token& Tok)
     {
       Writer.AddToken(Tok, Record.getRecordData());
     });

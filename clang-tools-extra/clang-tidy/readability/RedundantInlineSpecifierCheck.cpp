@@ -16,7 +16,7 @@
 #include "clang/Basic/Diagnostic.h"
 #include "clang/Basic/SourceLocation.h"
 #include "clang/Basic/SourceManager.h"
-#include "clang/Lex/Token.h"
+#include "clang/Basic/Token.h"
 
 #include "../utils/LexerUtils.h"
 

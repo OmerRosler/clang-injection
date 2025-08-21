@@ -44,6 +44,7 @@
 #include "clang/Basic/SourceLocation.h"
 #include "clang/Basic/Specifiers.h"
 #include "clang/Basic/TypeTraits.h"
+#include "clang/Basic/Token.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/PointerUnion.h"
 #include "llvm/ADT/STLExtras.h"
@@ -2179,68 +2180,26 @@ public:
 };
 
 
-/// Wrapper for the Token class of the Lexer
-// TODO(D0000): This is not a good representation for an already Lexed token. 
-// A better one would be a union on the ways to represent it in memory:
-// IdentifierInfo*, SourceRange, KindOnly, D0000 specific Annotations
-class ASTToken {
-public:
-  /// EXPECTS: clang::Token is not an annotation token.
-  ASTToken(const Token &T);
-  operator Token() const;
-
-  tok::TokenKind kind() const { return Kind; }
-
-  /// Return true if this is any of tok::annot_* kind tokens.
-  bool isAnnotation() const { return tok::isAnnotation(kind()); }
-
-  unsigned getLength() const;
-
-  std::string str() const;
-
-private:
-  /// Kind - The actual flavor of token this is.
-  tok::TokenKind Kind;
-
-  // Conceptually these next two fields could be in a union.  However, this
-  // causes gcc 4.2 to pessimize LexTokenInternal, a very performance critical
-  // routine. Keeping as separate members with casts until a more beautiful fix
-  // presents itself.
-
-  /// UintData - This holds either the length of the token text, when
-  /// a normal token, or the end of the SourceRange when an annotation
-  /// token.
-  SourceLocation::UIntTy UintData;
-  /// PtrData - This is a union of four different pointer types, which depends
-  /// on what type of token this is:
-  ///  Identifiers, keywords, etc:
-  ///    This is an IdentifierInfo*, which contains the uniqued identifier
-  ///    spelling.
-  ///  Literals:  isLiteral() returns true.
-  ///    This is a pointer to the start of the token in a text buffer, which
-  ///    may be dirty (have trigraphs / escaped newlines).
-  ///  Annotations (resolved type names, C++ scopes, etc): isAnnotation().
-  ///    This is a pointer to sema-specific data for the annotation token.
-  ///  Eof:
-  ///    This is a pointer to a Decl.
-  ///  Other:
-  ///    This is null.
-  void *PtrData;
-
-  /// Flags - Bits we track about this token, members of the TokenFlags enum.
-  unsigned short Flags;
-};
-
 class CXXDelayedParsedExpr final : public Expr,
-                                   private llvm::TrailingObjects<CXXDelayedParsedExpr, ASTToken> 
-                                   {
+                                   private llvm::TrailingObjects<CXXDelayedParsedExpr, Token> 
+{
   friend class TrailingObjects;
   // The context parameters
   //TemplateParameterList *ImplicitTemplateParams = nullptr;
 
   // TODO(D0000): Replace with token stream and parser state
   
-
+  /* FIXME: A possible huge optimization for the storage:
+    We get the storage from the Parser by stealing the cached tokens from the Preprocessor,
+    which is a SmallVector + starting offset. 
+    If the offset is zero (when the PP was not in an unannotated backtrck mode before we started stealing), 
+    and the allocator used by the preprocessor has lifetime longer than our ASTContext's,
+    we could just move the vector here (and store it directly). This prevents a memcopy of the entire
+    token stream.
+    If the allocators don't match, we could check if it fitted in the SBO. 
+    Note that stealing the whole vector when the offset is not zero is a security vulnerability, because we 
+    could read the tokens beforehand. If this is still desired, the IR should do a memcopy beforehand
+  */
   
   Stmt *ParseFunction;
   
@@ -2249,7 +2208,7 @@ class CXXDelayedParsedExpr final : public Expr,
   
   public:
   unsigned int NumTokens;
-
+  //TODO: Add constructor that moves the tokens inside instead of copying them
   CXXDelayedParsedExpr(QualType T, 
                        ArrayRef<Token> BodyLiteral, 
                        LambdaExpr* ParseFunction,
@@ -2263,7 +2222,7 @@ class CXXDelayedParsedExpr final : public Expr,
                    LambdaExpr *ParseFunction,
                    bool ContainsUnexpandedParameterPack);
   
-  //TODO(D0000): Right now, the Create takes arguments which are not AST types, like Token (and not ASTToken), make sure if this is idomatic clang
+  //TODO(D0000): Right now, the Create takes arguments which are not AST types, like Token, make sure if this is idomatic clang
   static CXXDelayedParsedExpr *
   Create(const ASTContext &C, CXXRecordDecl *Class,
          ArrayRef<Token> BodyLiteral, 
@@ -2287,27 +2246,18 @@ class CXXDelayedParsedExpr final : public Expr,
   void setEndLoc(SourceLocation EndLoc);
   
   
-  const ASTToken *getBodyTokensBegin() const {
-    return getTrailingObjects();
-  }
-  ASTToken *getBodyTokensBegin() {
-    return getTrailingObjects();
-  }
+  const Token *getBodyTokensBegin() const ;
+  Token *getBodyTokensBegin();
   
-  const ASTToken * getBodyTokensEnd() const {
-    return &getTrailingObjects()[NumTokens];
-  }
-  ASTToken * getBodyTokensEnd() {
-    return &getTrailingObjects()[NumTokens];
-  }
+  const Token * getBodyTokensEnd() const;
+  Token * getBodyTokensEnd();
 
   //TODO(D0000): Understand how clang allows iteration. For example for lambda captures
   // we only allow const iterations, but then how is the serializar build them?
-  using body_tokens_range = llvm::iterator_range<const ASTToken*>;
-  body_tokens_range getBodyRange() const
-  {
-    return body_tokens_range(getBodyTokensBegin(), getBodyTokensEnd());
-  }
+  using const_body_tokens_range = llvm::iterator_range<const Token*>;
+  using body_tokens_range = llvm::iterator_range<Token*>;
+  const_body_tokens_range getBodyRange() const;
+  body_tokens_range getBodyRange();
 
 
   // void setBody(TokenStreamLiteral* Body)

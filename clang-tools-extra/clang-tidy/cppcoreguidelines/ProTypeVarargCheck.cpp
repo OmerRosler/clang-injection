@@ -12,9 +12,9 @@
 #include "clang/ASTMatchers/ASTMatchFinder.h"
 #include "clang/ASTMatchers/ASTMatchers.h"
 #include "clang/Basic/TargetInfo.h"
+#include "clang/Basic/Token.h"
 #include "clang/Lex/PPCallbacks.h"
 #include "clang/Lex/Preprocessor.h"
-#include "clang/Lex/Token.h"
 
 using namespace clang::ast_matchers;
 

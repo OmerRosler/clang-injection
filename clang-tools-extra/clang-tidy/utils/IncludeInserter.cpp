@@ -7,9 +7,9 @@
 //===----------------------------------------------------------------------===//
 
 #include "IncludeInserter.h"
+#include "clang/Basic/Token.h"
 #include "clang/Lex/PPCallbacks.h"
 #include "clang/Lex/Preprocessor.h"
-#include "clang/Lex/Token.h"
 #include <optional>
 
 namespace clang::tidy::utils {

@@ -15,10 +15,10 @@
 
 #include "clang/Basic/LangOptions.h"
 #include "clang/Basic/SourceLocation.h"
+#include "clang/Basic/Token.h"
 #include "clang/Basic/TokenKinds.h"
 #include "clang/Lex/DependencyDirectivesScanner.h"
 #include "clang/Lex/PreprocessorLexer.h"
-#include "clang/Lex/Token.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringRef.h"
 #include <cassert>
