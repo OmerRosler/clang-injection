@@ -45,7 +45,8 @@ ExprResult Parser::ParseCXXDelayedParsedExpression()  {
 
   //TODO(D0000): Capture some syntax errors early, like {(}
   //TODO(D0000): Enforce an ending semicolon {token-seq;} so that the skipUntil wouldn't consume everything if there is a syntax error
-  // Note this is ok thing to do if this is always a single decleration
+  // Note this is ok thing to do if this is always a single decleration (which is intented). For example we will diagnose
+  //{{};{};} as illegal because of multiple delcreations at highest nesting
   // A syntax error inside this is dangerous, because we enter this token stream later, which will have different errors everywhere
   // Catching these early is also a starting point for fragemnt parsing
   // Also note this is hard to do without tracking nesting of all delimiters at once. We need a new RAII type just for that
@@ -58,16 +59,19 @@ ExprResult Parser::ParseCXXDelayedParsedExpression()  {
   Token Last = Tok;
   // get cached tokens and do a trivial copy of them into a data structure to be iterated by Sema
   auto CachedTokens = TokenCacher.CommitAndSteal();
-  Braces.consumeClose();
-
+  
   //TODO: Pass brace location to the AST type
-  auto Result = Actions.ActOnCXXDelayedParsedExpr(Lambda, CachedTokens, 
+  // The `drop_back` is because We don't want to pass the consumed closing brace to Sema
+  // It should probably be done elsewhere
+  auto Result = Actions.ActOnCXXDelayedParsedExpr(Lambda, 
+    llvm::ArrayRef<Token>(CachedTokens).drop_back(), 
     Lambda->containsUnexpandedParameterPack());
-
+    
   if (Result.isInvalid())
-  {
-    return Result;
-  }
+    {
+      return Result;
+    }
+  Braces.consumeClose();
 
   Last.setKind(tok::annot_token_sequence);
   Last.setAnnotationValue(Result.getAsOpaquePointer());
