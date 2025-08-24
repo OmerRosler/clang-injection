@@ -150,8 +150,3 @@ add_clang_library(clangAST
   # These generated headers are included transitively.
   target_parser_gen
   )
-
-  target_link_libraries(clangAST
-    PRIVATE
-    clangLex
-  )
